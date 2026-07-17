@@ -266,7 +266,7 @@ export default function Bracket({
   tournamentId?: string;
   editable?: boolean;
 }) {
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
   const roundNumbers = Array.from(new Set(matches.map((m) => m.round))).sort((a, b) => a - b);
   const rounds = roundNumbers.map((r) => matches.filter((m) => m.round === r));
   const placedIds = new Set(
@@ -301,22 +301,24 @@ export default function Bracket({
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
+              disabled={isPending}
               onClick={() => startTransition(() => addEarlierRound(tournamentId))}
-              className="rounded-lg border border-rose/40 bg-rose/10 px-3 py-1.5 text-xs font-semibold text-rose transition-colors hover:border-rose"
+              className="rounded-lg border border-rose/40 bg-rose/10 px-3 py-1.5 text-xs font-semibold text-rose transition-colors hover:border-rose disabled:opacity-50"
             >
-              + Añadir ronda anterior (dobla equipos)
+              {isPending ? "Aplicando…" : "+ Añadir ronda anterior (dobla equipos)"}
             </button>
             {rounds.length > 1 && (
               <button
                 type="button"
+                disabled={isPending}
                 onClick={() => {
                   if (confirm("Esto borra la ronda más temprana del bracket. ¿Continuar?")) {
                     startTransition(() => removeEarliestRound(tournamentId));
                   }
                 }}
-                className="rounded-lg border border-line bg-raised px-3 py-1.5 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-danger"
+                className="rounded-lg border border-line bg-raised px-3 py-1.5 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-danger disabled:opacity-50"
               >
-                − Quitar ronda anterior
+                {isPending ? "Aplicando…" : "− Quitar ronda anterior"}
               </button>
             )}
           </div>
