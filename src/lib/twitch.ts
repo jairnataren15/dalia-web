@@ -138,6 +138,25 @@ export async function checkSubscription(
   return { subscribed: true, tier: Number(entry.tier) };
 }
 
+/** Total de suscriptores reales del canal de Dalia (requiere el token de broadcaster). */
+export async function getBroadcasterSubscriberCount(): Promise<number | null> {
+  const broadcaster = await getBroadcasterAccessToken();
+  if (!broadcaster) return null;
+
+  const res = await fetch(
+    `${HELIX}/subscriptions?broadcaster_id=${broadcaster.broadcasterId}&first=1`,
+    {
+      headers: {
+        Authorization: `Bearer ${broadcaster.accessToken}`,
+        "Client-Id": clientId(),
+      },
+    }
+  );
+  if (!res.ok) return null;
+  const json = await res.json();
+  return typeof json.total === "number" ? json.total : null;
+}
+
 // ——— Token de aplicación (sin usuario) — para leer datos públicos como VODs ———
 
 let appToken: { token: string; expiresAt: number } | null = null;

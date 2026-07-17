@@ -2,9 +2,10 @@ import Link from "next/link";
 import { Card } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
 import TwitchIcon from "@/components/icons/TwitchIcon";
+import { getBroadcasterSubscriberCount } from "@/lib/twitch";
 
 export default async function AdminDashboard() {
-  const [totalUsers, verifiedUsers, adminCount, subCount, broadcaster, donorTotal, activeRaffleCount, teamsCount] =
+  const [totalUsers, verifiedUsers, adminCount, subCount, broadcaster, donorTotal, activeRaffleCount, teamsCount, pointsTotal] =
     await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { riotVerified: true } }),
@@ -14,13 +15,21 @@ export default async function AdminDashboard() {
       prisma.donor.aggregate({ _sum: { amount: true }, _count: true }),
       prisma.raffle.count({ where: { active: true } }),
       prisma.tournamentTeam.count({ where: { tournament: { active: true } } }),
+      prisma.user.aggregate({ _sum: { points: true } }),
     ]);
 
-  const stats = [
+  const realSubCount = broadcaster ? await getBroadcasterSubscriberCount().catch(() => null) : null;
+
+  const stats: { label: string; value: number | string; hint?: string }[] = [
     { label: "Cuentas registradas", value: totalUsers },
     { label: "Riot ID verificados", value: verifiedUsers },
     { label: "Administradores", value: adminCount },
-    { label: "Suscriptores detectados", value: subCount },
+    {
+      label: "Suscriptores del canal",
+      value: realSubCount !== null ? realSubCount : "—",
+      hint: `${subCount} vinculados a una cuenta en la web`,
+    },
+    { label: "Puntos DALIA.EXE en circulación", value: pointsTotal._sum.points ?? 0 },
     { label: "Equipos inscritos · Copa activa", value: teamsCount },
     { label: "Sorteos activos en la tienda", value: activeRaffleCount },
     { label: "Donaciones registradas", value: donorTotal._count },
@@ -56,6 +65,7 @@ export default async function AdminDashboard() {
           <Card key={s.label} className="p-5">
             <p className="text-xs uppercase tracking-wider text-faint">{s.label}</p>
             <p className="tnum mt-1 font-display text-3xl font-bold">{s.value}</p>
+            {s.hint && <p className="mt-1 text-xs text-dim">{s.hint}</p>}
           </Card>
         ))}
       </div>
