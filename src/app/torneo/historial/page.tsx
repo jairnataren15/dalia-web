@@ -1,0 +1,42 @@
+import { PageHeader, Card } from "@/components/ui";
+import Reveal from "@/components/Reveal";
+import { pastTournaments } from "@/lib/data";
+
+export const metadata = { title: "Historial de torneos — Dalia" };
+
+export default function HistorialPage() {
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-8 lg:px-8">
+      <PageHeader
+        eyebrow="Torneos"
+        title="Historial de la Copa"
+        lede="Todos los torneos DALIA.EXE, con sus campeones y MVPs. La gloria queda escrita."
+      />
+      <div className="space-y-4">
+        {pastTournaments.map((t, i) => (
+          <Reveal key={t.name} delay={i * 0.06}>
+            <Card className="flex flex-col justify-between gap-4 p-6 sm:flex-row sm:items-center">
+              <div>
+                <h2 className="font-display text-lg font-bold">{t.name}</h2>
+                <p className="text-sm text-dim">
+                  {t.date} · {t.teamsCount} equipos
+                </p>
+              </div>
+              <div className="flex gap-8 text-sm">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-faint">Campeón</p>
+                  <p className="font-display font-bold text-gold">🏆 {t.winner}</p>
+                  <p className="text-xs text-dim">vs {t.runnerUp}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-faint">MVP</p>
+                  <p className="font-semibold text-rose">{t.mvp}</p>
+                </div>
+              </div>
+            </Card>
+          </Reveal>
+        ))}
+      </div>
+    </div>
+  );
+}

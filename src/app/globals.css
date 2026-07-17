@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  /* Identidad Dalia: ciruela oscuro + rosa dalia + dorado */
+  --color-base: #0d0a12;
+  --color-surface: #151021;
+  --color-raised: #1d1630;
+  --color-hover: #241b3a;
+  --color-line: #2c2140;
+  --color-ink: #f4eff9;
+  --color-dim: #9d8db4;
+  --color-faint: #6b5d82;
+  --color-rose: #ff4d7d;
+  --color-rose-hi: #ff759b;
+  --color-rose-soft: #2d1424;
+  --color-gold: #e8b45a;
+  --color-gold-soft: #2c2314;
+  --color-live: #3ddc84;
+  --color-live-soft: #12291c;
+  --color-danger: #ff5c5c;
+
+  --font-display: var(--font-chakra), system-ui, sans-serif;
+  --font-body: var(--font-inter), system-ui, sans-serif;
+}
+
+::selection {
+  background: #ff4d7d;
+  color: #0d0a12;
+}
+
+html {
+  scrollbar-color: #2c2140 #0d0a12;
+}
+
+body {
+  background: var(--color-base);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+}
+
+/* Fondo con rayas diagonales sutiles, como textura de página */
+.striped-bg {
+  background-image: repeating-linear-gradient(
+    -55deg,
+    transparent 0px,
+    transparent 90px,
+    rgba(255, 77, 125, 0.025) 90px,
+    rgba(255, 77, 125, 0.025) 180px
+  );
+}
+
+/* Glow para elementos destacados */
+.rose-glow {
+  box-shadow: 0 0 24px rgba(255, 77, 125, 0.25);
+}
+
+/* Punto "en vivo" con pulso */
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.8); }
+}
+.live-dot {
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-dot { animation: none; }
+}
+
+/* Números tabulares para tablas y stats */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
