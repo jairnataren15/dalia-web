@@ -10,7 +10,7 @@ export default async function LfgPage() {
     auth(),
     prisma.lfgPost.findMany({
       orderBy: { createdAt: "desc" },
-      include: { user: { select: { name: true } } },
+      include: { user: { select: { name: true, image: true, avatarChamp: true, pronouns: true } } },
     }),
   ]);
 
@@ -18,6 +18,9 @@ export default async function LfgPage() {
     id: r.id,
     userId: r.userId,
     userName: r.user.name ?? "Anónimo",
+    userImage: r.user.image,
+    userAvatarChamp: r.user.avatarChamp,
+    userPronouns: r.user.pronouns,
     role: r.role,
     looking: r.looking,
     message: r.message,

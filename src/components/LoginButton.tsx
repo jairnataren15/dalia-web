@@ -1,6 +1,7 @@
 import { auth, signIn, signOut } from "@/auth";
 import { getViewMode } from "@/lib/adminView";
 import { setViewMode } from "@/app/admin/view-mode-actions";
+import UserAvatar from "@/components/UserAvatar";
 
 export default async function LoginButton() {
   const session = await auth();
@@ -36,13 +37,12 @@ export default async function LoginButton() {
           }}
           className="flex items-center gap-2"
         >
-          {session.user.image && (
-            <img
-              src={session.user.image}
-              alt=""
-              className="h-7 w-7 rounded-full ring-1 ring-rose/40"
-            />
-          )}
+          <UserAvatar
+            avatarChamp={session.user.avatarChamp}
+            image={session.user.image}
+            name={session.user.name}
+            size={28}
+          />
           <span className="hidden text-sm font-semibold sm:block">
             {session.user.name}
           </span>

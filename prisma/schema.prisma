@@ -82,11 +82,31 @@ model User {
   subSince     DateTime?
   subCheckedAt DateTime?
 
+  // Perfil público dentro de la web
+  bio         String?
+  pronouns    String?
+  avatarChamp String? // id de campeón de Data Dragon usado como avatar
+
   createdAt DateTime @default(now())
 
-  accounts Account[]
-  sessions Session[]
-  lfgPosts LfgPost[]
+  accounts     Account[]
+  sessions     Session[]
+  lfgPosts     LfgPost[]
+  galleryPosts GalleryPost[]
+}
+
+// Publicación en la Galería: imagen o clip de video subido por un usuario.
+model GalleryPost {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String // image | video
+  blobKey   String   @unique
+  mimeType  String
+  fileSize  Int
+  caption   String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Anuncio de "buscar equipo" — el rango/región/Riot ID se toman del perfil

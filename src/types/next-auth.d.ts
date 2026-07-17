@@ -8,6 +8,7 @@ declare module "next-auth" {
       riotGameName: string | null;
       riotTagLine: string | null;
       riotVerified: boolean;
+      avatarChamp: string | null;
     } & DefaultSession["user"];
   }
 }

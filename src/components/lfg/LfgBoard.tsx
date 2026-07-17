@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TIER_COLORS, type Tier } from "@/lib/data";
 import { createLfgPost, deleteLfgPost, type LfgActionState } from "@/app/lfg/actions";
+import UserAvatar from "@/components/UserAvatar";
 
 const ROLE_FILTERS = ["Todos", "Top", "Jungla", "Mid", "ADC", "Soporte"] as const;
 const ROLE_OPTIONS = ["Top", "Jungla", "Mid", "ADC", "Soporte"];
@@ -12,6 +13,9 @@ export interface LfgPostView {
   id: string;
   userId: string;
   userName: string;
+  userImage?: string | null;
+  userAvatarChamp?: string | null;
+  userPronouns?: string | null;
   role: string;
   looking: string;
   message: string;
@@ -145,7 +149,16 @@ export default function LfgBoard({
                 className="rounded-xl border border-line bg-surface p-5 transition-colors hover:border-rose/40"
               >
                 <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <UserAvatar
+                    avatarChamp={p.userAvatarChamp}
+                    image={p.userImage}
+                    name={p.userName}
+                    size={24}
+                  />
                   <span className="font-semibold">{p.userName}</span>
+                  {p.userPronouns && (
+                    <span className="text-xs text-faint">({p.userPronouns})</span>
+                  )}
                   <span
                     className="rounded-full px-2 py-0.5 text-[11px] font-bold"
                     style={{ color: tierColor, backgroundColor: `${tierColor}1f` }}

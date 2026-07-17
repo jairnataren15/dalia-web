@@ -20,6 +20,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.user.riotGameName = dbUser?.riotGameName ?? null;
       session.user.riotTagLine = dbUser?.riotTagLine ?? null;
       session.user.riotVerified = dbUser?.riotVerified ?? false;
+      session.user.avatarChamp = dbUser?.avatarChamp ?? null;
       return session;
     },
   },

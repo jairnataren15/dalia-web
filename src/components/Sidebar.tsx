@@ -52,7 +52,14 @@ const NAV: NavGroup[] = [
   },
   {
     title: "Comunidad",
-    items: [{ href: "/lfg", label: "Buscar equipo", icon: "◎" }],
+    items: [
+      { href: "/lfg", label: "Buscar equipo", icon: "◎" },
+      { href: "/galeria", label: "Galería", icon: "❈" },
+    ],
+  },
+  {
+    title: "Cuenta",
+    items: [{ href: "/perfil", label: "Mi perfil", icon: "☺" }],
   },
 ];
 
