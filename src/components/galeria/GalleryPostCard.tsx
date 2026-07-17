@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import UserAvatar from "@/components/UserAvatar";
 import CustomVideoPlayer from "@/components/galeria/CustomVideoPlayer";
 import { deleteGalleryPost } from "@/app/galeria/actions";
@@ -20,6 +22,31 @@ export interface GalleryPostView {
   platformLabel: string | null;
 }
 
+function ImageLightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+  return createPortal(
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-6"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Cerrar"
+        className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-raised text-xl text-ink hover:bg-hover"
+      >
+        ✕
+      </button>
+      <img
+        src={src}
+        alt={alt}
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-full max-w-full rounded-lg object-contain"
+      />
+    </div>,
+    document.body
+  );
+}
+
 export default function GalleryPostCard({
   post,
   canDelete,
@@ -27,25 +54,27 @@ export default function GalleryPostCard({
   post: GalleryPostView;
   canDelete: boolean;
 }) {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
   return (
     <div className="overflow-hidden rounded-xl border border-line bg-surface">
-      <div
-        className={`relative bg-raised ${
-          post.type === "image" ? "aspect-square" : ""
-        }`}
-        style={
-          post.type === "link" && post.embedWidth && post.embedHeight
-            ? { aspectRatio: `${post.embedWidth} / ${post.embedHeight}` }
-            : post.type === "video" || post.type === "link"
-              ? { aspectRatio: "16 / 9" }
-              : undefined
-        }
-      >
+      <div className="relative flex aspect-square items-center justify-center bg-raised">
         {post.type === "video" ? (
-          <CustomVideoPlayer src={`/api/gallery/${post.id}`} />
+          <div className="h-full w-full">
+            <CustomVideoPlayer src={`/api/gallery/${post.id}`} />
+          </div>
         ) : post.type === "link" ? (
           post.embedUrl ? (
-            <div className="h-full w-full border-t-2 border-rose">
+            <div
+              className="w-full border-t-2 border-rose"
+              style={{
+                aspectRatio:
+                  post.embedWidth && post.embedHeight
+                    ? `${post.embedWidth} / ${post.embedHeight}`
+                    : "16 / 9",
+                maxHeight: "100%",
+              }}
+            >
               <iframe
                 src={post.embedUrl}
                 allowFullScreen
@@ -67,11 +96,27 @@ export default function GalleryPostCard({
             </a>
           )
         ) : (
-          <img
-            src={`/api/gallery/${post.id}`}
-            alt={post.caption ?? ""}
-            className="h-full w-full object-cover"
-          />
+          <>
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(true)}
+              className="h-full w-full cursor-zoom-in"
+              aria-label="Ampliar imagen"
+            >
+              <img
+                src={`/api/gallery/${post.id}`}
+                alt={post.caption ?? ""}
+                className="h-full w-full object-cover"
+              />
+            </button>
+            {lightboxOpen && (
+              <ImageLightbox
+                src={`/api/gallery/${post.id}`}
+                alt={post.caption ?? ""}
+                onClose={() => setLightboxOpen(false)}
+              />
+            )}
+          </>
         )}
       </div>
       <div className="p-3">
