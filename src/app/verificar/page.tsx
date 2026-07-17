@@ -6,6 +6,7 @@ import VerifiedCard from "@/components/verificar/VerifiedCard";
 import TwitchCard from "@/components/verificar/TwitchCard";
 import { auth, signIn } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import DiscordIcon from "@/components/icons/DiscordIcon";
 
 export const metadata = { title: "Verificar cuenta — Dalia" };
 
@@ -69,8 +70,9 @@ export default async function VerificarPage() {
           >
             <button
               type="submit"
-              className="rounded-lg bg-rose px-5 py-2.5 font-display text-sm font-bold text-base transition-colors hover:bg-rose-hi"
+              className="flex items-center gap-2 rounded-lg bg-rose px-5 py-2.5 font-display text-sm font-bold text-base transition-colors hover:bg-rose-hi"
             >
+              <DiscordIcon className="h-4 w-4" />
               Iniciar sesión con Discord
             </button>
           </form>

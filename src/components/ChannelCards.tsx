@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { TWITCH_URL, DISCORD_URL } from "@/lib/channels";
+import DiscordIcon from "@/components/icons/DiscordIcon";
+import TwitchIcon from "@/components/icons/TwitchIcon";
 
 interface TwitchData {
   live: boolean;
@@ -72,7 +74,8 @@ export default function ChannelCards() {
           </span>
         )}
         <div className="min-w-0 flex-1">
-          <p className="font-display font-bold">
+          <p className="flex items-center gap-1.5 font-display font-bold">
+            <TwitchIcon className="h-4 w-4 text-[#a970ff]" />
             Twitch{" "}
             <span className="text-xs font-normal text-faint">dalia3margaret</span>
           </p>
@@ -120,7 +123,10 @@ export default function ChannelCards() {
           </span>
         )}
         <div className="min-w-0 flex-1">
-          <p className="font-display font-bold">Discord</p>
+          <p className="flex items-center gap-1.5 font-display font-bold">
+            <DiscordIcon className="h-4 w-4 text-[#5865f2]" />
+            Discord
+          </p>
           <p className="tnum text-sm text-dim">
             {discord ? (
               <>

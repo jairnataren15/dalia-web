@@ -8,6 +8,7 @@ import { getVerifiedMembers } from "@/lib/ranking";
 import { getUserByLogin, getBroadcasterVideos } from "@/lib/twitch";
 import { getActiveTournament } from "@/lib/tournament";
 import { champSplash, champIcon, rankLabel, winrate } from "@/lib/data";
+import DiscordIcon from "@/components/icons/DiscordIcon";
 
 function formatDuration(d: string): string {
   // "2h17m12s" -> "2:17:12" (o "17:12" si no hay horas)
@@ -58,7 +59,7 @@ export default async function Home() {
               La comunidad de{" "}
               <span className="text-rose">Dalia</span> florece aquí
             </h1>
-            <p className="mt-3 max-w-lg text-sm text-dim sm:text-base">
+            <p className="mt-3 max-w-lg text-sm text-rose sm:text-base">
               Rankings de LoL, torneos de la comunidad, sorteos y predicciones.
               Todo lo que pasa dentro y fuera del directo, en un solo sitio.
             </p>
@@ -79,8 +80,9 @@ export default async function Home() {
                 href={DISCORD_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg border border-[#5865f2]/50 bg-[#5865f2]/15 px-5 py-2.5 font-display text-sm font-semibold text-[#8f99ff] backdrop-blur transition-colors hover:bg-[#5865f2]/25"
+                className="flex items-center gap-2 rounded-lg border border-[#5865f2]/50 bg-[#5865f2]/15 px-5 py-2.5 font-display text-sm font-semibold text-[#8f99ff] backdrop-blur transition-colors hover:bg-[#5865f2]/25"
               >
+                <DiscordIcon className="h-4 w-4" />
                 Unirme al Discord
               </a>
             </div>

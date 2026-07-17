@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import DiscordIcon from "@/components/icons/DiscordIcon";
+import TwitchIcon from "@/components/icons/TwitchIcon";
 
 interface NavItem {
   href: string;
@@ -176,16 +178,18 @@ export default function Sidebar({
               href="https://www.twitch.tv/dalia3margaret"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#a970ff] hover:underline"
+              className="flex items-center gap-1.5 text-[#a970ff] hover:underline"
             >
+              <TwitchIcon className="h-3.5 w-3.5" />
               Twitch
             </a>
             <a
               href="https://discord.gg/SkXgFQrpgx"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#5865f2] hover:underline"
+              className="flex items-center gap-1.5 text-[#5865f2] hover:underline"
             >
+              <DiscordIcon className="h-3.5 w-3.5" />
               Discord
             </a>
           </div>

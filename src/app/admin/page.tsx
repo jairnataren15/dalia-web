@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
+import TwitchIcon from "@/components/icons/TwitchIcon";
 
 export default async function AdminDashboard() {
   const [totalUsers, verifiedUsers, adminCount, subCount, broadcaster, donorTotal, activeRaffleCount, teamsCount] =
@@ -43,8 +44,9 @@ export default async function AdminDashboard() {
         </div>
         <Link
           href="/api/twitch/connect?mode=broadcaster"
-          className="rounded-lg bg-[#9147ff] px-4 py-2 font-display text-sm font-bold text-white transition-colors hover:bg-[#7d3bdb]"
+          className="flex items-center gap-2 rounded-lg bg-[#9147ff] px-4 py-2 font-display text-sm font-bold text-white transition-colors hover:bg-[#7d3bdb]"
         >
+          <TwitchIcon className="h-4 w-4" />
           {broadcaster ? "Reconectar Twitch" : "Conectar Twitch de Dalia"}
         </Link>
       </Card>

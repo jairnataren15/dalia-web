@@ -1,5 +1,6 @@
 import LiveStatus from "@/components/LiveStatus";
 import LoginButton from "@/components/LoginButton";
+import DiscordIcon from "@/components/icons/DiscordIcon";
 import { DISCORD_URL } from "@/lib/channels";
 
 export default function Topbar() {
@@ -11,8 +12,9 @@ export default function Topbar() {
           href={DISCORD_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden rounded-lg border border-[#5865f2]/50 bg-[#5865f2]/10 px-4 py-1.5 font-display text-sm font-semibold text-[#7d88f5] transition-colors hover:bg-[#5865f2]/20 sm:block"
+          className="hidden items-center gap-1.5 rounded-lg border border-[#5865f2]/50 bg-[#5865f2]/10 px-4 py-1.5 font-display text-sm font-semibold text-[#7d88f5] transition-colors hover:bg-[#5865f2]/20 sm:flex"
         >
+          <DiscordIcon className="h-4 w-4" />
           Discord
         </a>
         <LoginButton />
