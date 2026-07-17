@@ -1,12 +1,16 @@
 import LiveStatus from "@/components/LiveStatus";
 import LoginButton from "@/components/LoginButton";
 import DiscordIcon from "@/components/icons/DiscordIcon";
+import BackButton from "@/components/BackButton";
 import { DISCORD_URL } from "@/lib/channels";
 
 export default function Topbar() {
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-base/85 px-4 pl-16 backdrop-blur lg:px-6">
-      <LiveStatus />
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-line bg-base/85 px-4 pl-16 backdrop-blur lg:px-6">
+      <div className="flex min-w-0 items-center gap-3">
+        <BackButton />
+        <LiveStatus />
+      </div>
       <div className="flex items-center gap-3">
         <a
           href={DISCORD_URL}
