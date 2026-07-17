@@ -30,7 +30,28 @@
 
 html {
   scrollbar-color: #2c2140 #0d0a12;
-  cursor: url("/cursor-infinity-edge.png") 2 2, auto;
+}
+
+/* Cursor custom en todo el sitio, incluyendo botones/links (que traen su
+   propio cursor: pointer por defecto). Se respetan los cursores de arrastre
+   (drag & drop del bracket, barra del reproductor) con mayor especificidad. */
+html,
+a,
+button,
+input,
+select,
+textarea,
+[role="button"],
+label {
+  cursor: url("/cursor-infinity-edge.png") 2 2, auto !important;
+}
+
+.cursor-grab {
+  cursor: grab !important;
+}
+.cursor-grabbing,
+.active\:cursor-grabbing:active {
+  cursor: grabbing !important;
 }
 
 body {
