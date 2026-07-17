@@ -15,6 +15,8 @@ export interface GalleryPostView {
   authorPronouns: string | null;
   externalUrl: string | null;
   embedUrl: string | null;
+  embedWidth?: number | null;
+  embedHeight?: number | null;
   platformLabel: string | null;
 }
 
@@ -29,8 +31,15 @@ export default function GalleryPostCard({
     <div className="overflow-hidden rounded-xl border border-line bg-surface">
       <div
         className={`relative bg-raised ${
-          post.type === "video" || post.type === "link" ? "aspect-video" : "aspect-square"
+          post.type === "image" ? "aspect-square" : ""
         }`}
+        style={
+          post.type === "link" && post.embedWidth && post.embedHeight
+            ? { aspectRatio: `${post.embedWidth} / ${post.embedHeight}` }
+            : post.type === "video" || post.type === "link"
+              ? { aspectRatio: "16 / 9" }
+              : undefined
+        }
       >
         {post.type === "video" ? (
           <CustomVideoPlayer src={`/api/gallery/${post.id}`} />

@@ -17,18 +17,26 @@ export default async function GaleriaPage() {
     }),
   ]);
 
-  // Autorepara posts de link que quedaron sin embed antes de soportar su
-  // plataforma (ej. Medal se añadió después de que ya hubiera posts).
+  // Autorepara posts de link que quedaron sin embed o sin proporción antes
+  // de soportar su plataforma (ej. Medal se añadió/mejoró después de que ya
+  // hubiera posts creados).
   const posts = await Promise.all(
     rawPosts.map(async (p) => {
-      if (p.type === "link" && !p.embedUrl && p.externalUrl) {
-        const parsed = await parseVideoUrl(p.externalUrl).catch(() => null);
+      const needsHeal =
+        p.type === "link" &&
+        p.externalUrl &&
+        (!p.embedUrl || (p.platformLabel === "Medal" && p.embedWidth == null));
+      if (needsHeal) {
+        const parsed = await parseVideoUrl(p.externalUrl!).catch(() => null);
         if (parsed?.embedUrl) {
-          await prisma.galleryPost.update({
-            where: { id: p.id },
-            data: { embedUrl: parsed.embedUrl, platformLabel: parsed.platformLabel },
-          });
-          return { ...p, embedUrl: parsed.embedUrl, platformLabel: parsed.platformLabel };
+          const data = {
+            embedUrl: parsed.embedUrl,
+            embedWidth: parsed.embedWidth ?? null,
+            embedHeight: parsed.embedHeight ?? null,
+            platformLabel: parsed.platformLabel,
+          };
+          await prisma.galleryPost.update({ where: { id: p.id }, data });
+          return { ...p, ...data };
         }
       }
       return p;
@@ -73,6 +81,8 @@ export default async function GaleriaPage() {
                 authorPronouns: p.user.pronouns,
                 externalUrl: p.externalUrl,
                 embedUrl: p.embedUrl,
+                embedWidth: p.embedWidth,
+                embedHeight: p.embedHeight,
                 platformLabel: p.platformLabel,
               }}
               canDelete={session?.user?.id === p.userId || session?.user?.role === "ADMIN"}

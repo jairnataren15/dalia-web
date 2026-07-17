@@ -107,6 +107,8 @@ model GalleryPost {
   // Para posts tipo "link" (Twitch, YouTube, Medal, Overplay...)
   externalUrl   String?
   embedUrl      String? // URL de iframe si la plataforma se puede incrustar
+  embedWidth    Int? // proporción reportada por el oEmbed de la plataforma
+  embedHeight   Int?
   platformLabel String?
 
   caption   String?

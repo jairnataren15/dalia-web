@@ -103,6 +103,8 @@ export async function addGalleryLink(
       type: "link",
       externalUrl: url,
       embedUrl: parsed.embedUrl,
+      embedWidth: parsed.embedWidth ?? null,
+      embedHeight: parsed.embedHeight ?? null,
       platformLabel: parsed.platformLabel,
       caption: caption || null,
     },

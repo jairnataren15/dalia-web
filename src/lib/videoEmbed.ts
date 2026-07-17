@@ -7,22 +7,34 @@ const TWITCH_PARENTS = ["dalia-exe.netlify.app", "localhost"];
 export interface ParsedVideoUrl {
   platformLabel: string;
   embedUrl: string | null;
+  embedWidth?: number | null;
+  embedHeight?: number | null;
 }
 
-/** Resuelve el iframe real de una plataforma vía su oEmbed público. */
-async function resolveOembed(url: string, endpoint: string): Promise<string | null> {
+interface OembedResult {
+  embedUrl: string | null;
+  width: number | null;
+  height: number | null;
+}
+
+/** Resuelve el iframe real (y su proporción) de una plataforma vía su oEmbed público. */
+async function resolveOembed(url: string, endpoint: string): Promise<OembedResult> {
   try {
     const res = await fetch(`${endpoint}?url=${encodeURIComponent(url)}&format=json`, {
       signal: AbortSignal.timeout(5000),
     });
-    if (!res.ok) return null;
+    if (!res.ok) return { embedUrl: null, width: null, height: null };
     const json = await res.json();
     const html = typeof json.html === "string" ? json.html : null;
-    if (!html) return null;
-    const match = html.match(/src="([^"]+)"/);
-    return match ? match[1] : null;
+    if (!html) return { embedUrl: null, width: null, height: null };
+    const srcMatch = html.match(/src="([^"]+)"/);
+    return {
+      embedUrl: srcMatch ? srcMatch[1] : null,
+      width: typeof json.width === "number" ? json.width : null,
+      height: typeof json.height === "number" ? json.height : null,
+    };
   } catch {
-    return null;
+    return { embedUrl: null, width: null, height: null };
   }
 }
 
@@ -77,10 +89,10 @@ export async function parseVideoUrl(raw: string): Promise<ParsedVideoUrl | null>
     }
   }
 
-  // Medal.tv — usa su oEmbed público para conseguir el iframe real.
+  // Medal.tv — usa su oEmbed público para conseguir el iframe real y su proporción.
   if (host === "medal.tv") {
-    const embedUrl = await resolveOembed(raw, "https://medal.tv/api/oembed");
-    return { platformLabel: "Medal", embedUrl };
+    const { embedUrl, width, height } = await resolveOembed(raw, "https://medal.tv/api/oembed");
+    return { platformLabel: "Medal", embedUrl, embedWidth: width, embedHeight: height };
   }
 
   // Overplay / Outplayed y cualquier otro dominio no reconocido.
