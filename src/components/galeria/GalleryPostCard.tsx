@@ -27,16 +27,22 @@ export default function GalleryPostCard({
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-line bg-surface">
-      <div className="relative aspect-square bg-raised">
+      <div
+        className={`relative bg-raised ${
+          post.type === "video" || post.type === "link" ? "aspect-video" : "aspect-square"
+        }`}
+      >
         {post.type === "video" ? (
           <CustomVideoPlayer src={`/api/gallery/${post.id}`} />
         ) : post.type === "link" ? (
           post.embedUrl ? (
-            <iframe
-              src={post.embedUrl}
-              allowFullScreen
-              className="h-full w-full border-0"
-            />
+            <div className="h-full w-full border-t-2 border-rose">
+              <iframe
+                src={post.embedUrl}
+                allowFullScreen
+                className="h-full w-full border-0"
+              />
+            </div>
           ) : (
             <a
               href={post.externalUrl ?? "#"}
