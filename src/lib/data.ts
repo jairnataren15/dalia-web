@@ -46,7 +46,7 @@ export interface Member {
 }
 
 export const members: Member[] = [
-  { id: "dalia", riotId: "Sam Chispas", tag: "Lux", discord: "dalia", region: "LAN", role: "Mid", tier: "Oro", division: "I", lp: 10, wins: 451, losses: 472, mains: ["Seraphine", "Lux", "Xayah"], kda: 2.6, streak: 1, lpHistory: [1620, 1640, 1610, 1660, 1690, 1670, 1700, 1680, 1695, 1710] },
+  { id: "dalia", riotId: "QuesoTrïpleCrema", tag: "LAN", discord: "dalia", region: "LAN", role: "Mid", tier: "Oro", division: "I", lp: 10, wins: 451, losses: 472, mains: ["Seraphine", "Lux", "Xayah"], kda: 2.6, streak: 1, lpHistory: [1620, 1640, 1610, 1660, 1690, 1670, 1700, 1680, 1695, 1710] },
 ];
 
 export const rankLabel = (m: Member) =>

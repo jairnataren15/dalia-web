@@ -3,7 +3,7 @@ import { getAccount, getSummonerStats, PLATFORM_BY_REGION } from "./riot";
 import type { Member, Region, Tier } from "./data";
 
 /** Riot ID fijo de Dalia — siempre aparece en el ranking, verificada o no. */
-export const DALIA_RIOT = { gameName: "Sam Chispas", tagLine: "Lux", region: "LAN" as Region };
+export const DALIA_RIOT = { gameName: "QuesoTrïpleCrema", tagLine: "LAN", region: "LAN" as Region };
 
 const TIER_ORDER: Tier[] = [
   "Hierro", "Bronce", "Plata", "Oro", "Platino",
