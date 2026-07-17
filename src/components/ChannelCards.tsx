@@ -91,8 +91,10 @@ export default function ChannelCards() {
               <span className="text-rose">Cargando…</span>
             )}
           </p>
-          {twitch?.game && (
-            <p className="truncate text-xs text-faint">Jugando: {twitch.game}</p>
+          {twitch && (
+            <p className="truncate text-xs text-faint">
+              {twitch.live && twitch.game ? `Jugando: ${twitch.game}` : "Desconectada ahora mismo"}
+            </p>
           )}
         </div>
         <span className="rounded-lg bg-[#a970ff] px-4 py-1.5 font-display text-xs font-semibold text-white">
