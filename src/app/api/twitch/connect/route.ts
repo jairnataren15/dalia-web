@@ -8,18 +8,19 @@ import { auth } from "@/auth";
 // identidad básica para vincular la cuenta.
 
 export async function GET(req: NextRequest) {
+  const origin = process.env.AUTH_URL ?? req.nextUrl.origin;
   const session = await auth();
   if (!session?.user) {
-    return NextResponse.redirect(new URL("/verificar", req.url));
+    return NextResponse.redirect(new URL("/verificar", origin));
   }
 
   const mode = req.nextUrl.searchParams.get("mode") === "broadcaster" ? "broadcaster" : "viewer";
   if (mode === "broadcaster" && session.user.role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/admin", req.url));
+    return NextResponse.redirect(new URL("/admin", origin));
   }
 
   const state = randomBytes(16).toString("hex");
-  const redirectUri = new URL("/api/twitch/callback", req.url).toString();
+  const redirectUri = new URL("/api/twitch/callback", origin).toString();
   const scope = mode === "broadcaster" ? "channel:read:subscriptions" : "";
 
   const authorizeUrl = new URL("https://id.twitch.tv/oauth2/authorize");

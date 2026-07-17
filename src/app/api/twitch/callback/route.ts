@@ -4,9 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { exchangeCode, getTwitchUser, checkSubscription } from "@/lib/twitch";
 
 export async function GET(req: NextRequest) {
+  const origin = process.env.AUTH_URL ?? req.nextUrl.origin;
   const session = await auth();
   if (!session?.user) {
-    return NextResponse.redirect(new URL("/verificar", req.url));
+    return NextResponse.redirect(new URL("/verificar", origin));
   }
 
   const code = req.nextUrl.searchParams.get("code");
@@ -17,17 +18,17 @@ export async function GET(req: NextRequest) {
   const failUrl = mode === "broadcaster" ? "/admin" : "/verificar";
 
   if (!code || !state || state !== savedState) {
-    return NextResponse.redirect(new URL(`${failUrl}?twitch=error`, req.url));
+    return NextResponse.redirect(new URL(`${failUrl}?twitch=error`, origin));
   }
 
   try {
-    const redirectUri = new URL("/api/twitch/callback", req.url).toString();
+    const redirectUri = new URL("/api/twitch/callback", origin).toString();
     const tokens = await exchangeCode(code, redirectUri);
     const twitchUser = await getTwitchUser(tokens.access_token);
 
     if (mode === "broadcaster") {
       if (session.user.role !== "ADMIN") {
-        return NextResponse.redirect(new URL("/admin?twitch=error", req.url));
+        return NextResponse.redirect(new URL("/admin?twitch=error", origin));
       }
       await prisma.broadcasterToken.upsert({
         where: { id: "dalia" },
@@ -45,7 +46,7 @@ export async function GET(req: NextRequest) {
           scope: tokens.scope.join(" "),
         },
       });
-      const res = NextResponse.redirect(new URL("/admin?twitch=connected", req.url));
+      const res = NextResponse.redirect(new URL("/admin?twitch=connected", origin));
       res.cookies.delete("twitch_oauth");
       return res;
     }
@@ -53,7 +54,7 @@ export async function GET(req: NextRequest) {
     // Modo viewer: vincula la identidad de Twitch a la cuenta logueada.
     const existing = await prisma.user.findUnique({ where: { twitchId: twitchUser.id } });
     if (existing && existing.id !== session.user.id) {
-      return NextResponse.redirect(new URL("/verificar?twitch=taken", req.url));
+      return NextResponse.redirect(new URL("/verificar?twitch=taken", origin));
     }
 
     const sub = await checkSubscription(twitchUser.id).catch(
@@ -73,10 +74,10 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const res = NextResponse.redirect(new URL("/verificar?twitch=connected", req.url));
+    const res = NextResponse.redirect(new URL("/verificar?twitch=connected", origin));
     res.cookies.delete("twitch_oauth");
     return res;
   } catch {
-    return NextResponse.redirect(new URL(`${failUrl}?twitch=error`, req.url));
+    return NextResponse.redirect(new URL(`${failUrl}?twitch=error`, origin));
   }
 }
