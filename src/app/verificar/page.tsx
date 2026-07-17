@@ -3,6 +3,7 @@ import Reveal from "@/components/Reveal";
 import RiotLinkForm from "@/components/verificar/RiotLinkForm";
 import ChallengeCard from "@/components/verificar/ChallengeCard";
 import VerifiedCard from "@/components/verificar/VerifiedCard";
+import TwitchCard from "@/components/verificar/TwitchCard";
 import { auth, signIn } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -29,6 +30,16 @@ const TIERS = [
       "Acceso a sorteos exclusivos (partida de flex, revisión de VOD)",
     ],
   },
+  {
+    name: "Track · Suscriptor",
+    req: "Twitch conectado + suscripción activa al canal",
+    perks: [
+      "Multiplicador x1.5–x2 en puntos DALIA.EXE",
+      "Sorteos exclusivos solo para subs",
+      "Insignia de suscriptor en el ranking",
+      "Inscripción anticipada a torneos (24h antes)",
+    ],
+  },
 ];
 
 export default async function VerificarPage() {
@@ -42,7 +53,7 @@ export default async function VerificarPage() {
       <PageHeader
         eyebrow="Cuenta"
         title="Verifica tu cuenta"
-        lede="Dos niveles: con Discord ya participas en casi todo; con tu Riot ID entras al ranking, a los torneos y a los sorteos exclusivos."
+        lede="Con Discord ya participas en casi todo; con tu Riot ID entras al ranking y los torneos; con Twitch desbloqueas beneficios de suscriptor."
       />
 
       {!user ? (
@@ -80,25 +91,36 @@ export default async function VerificarPage() {
         <RiotLinkForm />
       )}
 
-      <div className="mt-10 grid gap-5 sm:grid-cols-2">
-        {TIERS.map((t, i) => (
+      {user && (
+        <div className="mt-5">
+          <TwitchCard twitchLogin={user.twitchLogin} subTier={user.subTier} />
+        </div>
+      )}
+
+      <div className="mt-10 grid gap-5 sm:grid-cols-3">
+        {TIERS.map((t, i) => {
+          const accent = i === 1 ? "text-rose" : i === 2 ? "text-[#a970ff]" : "";
+          const border = i === 1 ? "border-rose/40" : i === 2 ? "border-[#9147ff]/40" : "";
+          const check = i === 1 ? "text-rose" : i === 2 ? "text-[#a970ff]" : "text-live";
+          return (
           <Reveal key={t.name} delay={i * 0.08}>
-            <Card className={`h-full p-6 ${i === 1 ? "border-rose/40" : ""}`}>
-              <h2 className={`font-display text-lg font-bold ${i === 1 ? "text-rose" : ""}`}>
+            <Card className={`h-full p-6 ${border}`}>
+              <h2 className={`font-display text-lg font-bold ${accent}`}>
                 {t.name}
               </h2>
               <p className="mt-1 text-xs uppercase tracking-wider text-faint">{t.req}</p>
               <ul className="mt-4 space-y-2">
                 {t.perks.map((p) => (
                   <li key={p} className="flex gap-2.5 text-sm text-dim">
-                    <span className={i === 1 ? "text-rose" : "text-live"}>✓</span>
+                    <span className={check}>✓</span>
                     {p}
                   </li>
                 ))}
               </ul>
             </Card>
           </Reveal>
-        ))}
+          );
+        })}
       </div>
 
       <p className="mt-6 text-xs text-faint">

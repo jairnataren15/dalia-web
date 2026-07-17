@@ -71,8 +71,41 @@ model User {
   pendingChallengeIcon Int?
   pendingChallengeAt   DateTime?
 
+  // Vínculo con Twitch (identidad del viewer)
+  twitchId          String?   @unique
+  twitchLogin       String?
+  twitchProfileImg  String?
+  twitchConnectedAt DateTime?
+
+  // Estado de suscripción en el canal de Dalia (se sincroniza contra el token del broadcaster)
+  subTier      Int? // 1000 = Tier 1, 2000 = Tier 2, 3000 = Tier 3 (formato Twitch)
+  subSince     DateTime?
+  subCheckedAt DateTime?
+
   createdAt DateTime @default(now())
 
   accounts Account[]
   sessions Session[]
+}
+
+// Token OAuth del canal (broadcaster) de Dalia — fila única, usado para
+// consultar su lista de suscriptores vía la API de Twitch.
+model BroadcasterToken {
+  id           String   @id @default("dalia")
+  twitchUserId String
+  accessToken  String
+  refreshToken String
+  scope        String
+  updatedAt    DateTime @updatedAt
+}
+
+// Donación registrada manualmente por un admin (sin integración de pago real).
+model Donor {
+  id        String   @id @default(cuid())
+  name      String
+  amount    Float
+  currency  String   @default("EUR")
+  note      String?
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
 }

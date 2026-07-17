@@ -7,6 +7,7 @@ export const metadata = { title: "Admin — DALIA.EXE" };
 const NAV = [
   { href: "/admin", label: "Resumen" },
   { href: "/admin/usuarios", label: "Usuarios" },
+  { href: "/admin/donadores", label: "Donadores" },
 ];
 
 export default async function AdminLayout({

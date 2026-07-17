@@ -17,3 +17,32 @@ export async function setUserRole(userId: string, role: "USER" | "ADMIN") {
   await prisma.user.update({ where: { id: userId }, data: { role } });
   revalidatePath("/admin/usuarios");
 }
+
+/** Registra una donación manual (sin integración de pago real). */
+export async function addDonor(formData: FormData) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "ADMIN") {
+    throw new Error("No autorizado.");
+  }
+
+  const name = String(formData.get("name") ?? "").trim();
+  const amount = Number(formData.get("amount"));
+  const note = String(formData.get("note") ?? "").trim() || null;
+
+  if (!name || !Number.isFinite(amount) || amount <= 0) {
+    throw new Error("Nombre y cantidad son obligatorios.");
+  }
+
+  await prisma.donor.create({ data: { name, amount, note } });
+  revalidatePath("/admin/donadores");
+}
+
+/** Elimina un registro de donación. */
+export async function deleteDonor(id: string) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "ADMIN") {
+    throw new Error("No autorizado.");
+  }
+  await prisma.donor.delete({ where: { id } });
+  revalidatePath("/admin/donadores");
+}
