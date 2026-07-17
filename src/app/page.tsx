@@ -59,7 +59,7 @@ export default async function Home() {
               La comunidad de{" "}
               <span className="text-rose">Dalia</span> florece aquí
             </h1>
-            <p className="mt-3 max-w-lg text-sm text-rose sm:text-base">
+            <p className="mt-3 max-w-lg text-sm text-rose sm:text-[1rem]">
               Rankings de LoL, torneos de la comunidad, sorteos y predicciones.
               Todo lo que pasa dentro y fuera del directo, en un solo sitio.
             </p>
