@@ -121,6 +121,77 @@ export async function setBracketSlot(matchId: string, side: "A" | "B", teamId: s
   revalidateTorneo();
 }
 
+// Actualización rápida de una casilla (usada por la edición inline en /torneo).
+export async function quickUpdateMatch(
+  matchId: string,
+  fields: { hora?: string; scoreA?: number; scoreB?: number; state?: string }
+) {
+  await requireAdmin();
+  const data: Record<string, unknown> = {};
+  if (fields.hora !== undefined) data.hora = fields.hora;
+  if (fields.scoreA !== undefined) data.scoreA = fields.scoreA;
+  if (fields.scoreB !== undefined) data.scoreB = fields.scoreB;
+  if (fields.state !== undefined) data.state = fields.state;
+  await prisma.bracketMatch.update({ where: { id: matchId }, data });
+  revalidateTorneo();
+}
+
+// Añade una ronda anterior (dobla el número de equipos): octavos antes de
+// cuartos, dieciseisavos antes de octavos, etc.
+export async function addEarlierRound(tournamentId: string) {
+  await requireAdmin();
+  const matches = await prisma.bracketMatch.findMany({
+    where: { tournamentId },
+    orderBy: [{ round: "asc" }, { slot: "asc" }],
+  });
+  if (matches.length === 0) throw new Error("El torneo no tiene casillas.");
+
+  const minRound = Math.min(...matches.map((m) => m.round));
+  const firstRoundCount = matches.filter((m) => m.round === minRound).length;
+  const newRoundMatchCount = firstRoundCount * 2;
+
+  await prisma.$transaction([
+    ...matches.map((m) =>
+      prisma.bracketMatch.update({ where: { id: m.id }, data: { round: m.round + 1 } })
+    ),
+    ...Array.from({ length: newRoundMatchCount }, (_, i) =>
+      prisma.bracketMatch.create({
+        data: { tournamentId, round: 1, slot: i, hora: "18:00", state: "pendiente" },
+      })
+    ),
+    prisma.tournament.update({
+      where: { id: tournamentId },
+      data: { maxTeams: newRoundMatchCount * 2 },
+    }),
+  ]);
+  revalidateTorneo();
+}
+
+// Quita la ronda más temprana del bracket (mínimo 1 ronda restante).
+export async function removeEarliestRound(tournamentId: string) {
+  await requireAdmin();
+  const matches = await prisma.bracketMatch.findMany({ where: { tournamentId } });
+  const rounds = Array.from(new Set(matches.map((m) => m.round))).sort((a, b) => a - b);
+  if (rounds.length <= 1) throw new Error("No puedes quitar la única ronda del bracket.");
+
+  const minRound = rounds[0];
+  const nextRoundCount = matches.filter((m) => m.round === rounds[1]).length;
+
+  await prisma.$transaction([
+    prisma.bracketMatch.deleteMany({ where: { tournamentId, round: minRound } }),
+    ...matches
+      .filter((m) => m.round !== minRound)
+      .map((m) =>
+        prisma.bracketMatch.update({ where: { id: m.id }, data: { round: m.round - 1 } })
+      ),
+    prisma.tournament.update({
+      where: { id: tournamentId },
+      data: { maxTeams: nextRoundCount * 2 },
+    }),
+  ]);
+  revalidateTorneo();
+}
+
 export async function unassignTeamFromBracket(tournamentId: string, teamId: string) {
   await requireAdmin();
   await prisma.bracketMatch.updateMany({
