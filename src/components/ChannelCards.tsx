@@ -23,16 +23,26 @@ interface DiscordData {
 export default function ChannelCards() {
   const [twitch, setTwitch] = useState<TwitchData | null>(null);
   const [discord, setDiscord] = useState<DiscordData | null>(null);
+  const [twitchError, setTwitchError] = useState(false);
+  const [discordError, setDiscordError] = useState(false);
 
   useEffect(() => {
-    fetch("/api/twitch")
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setTwitch)
-      .catch(() => {});
-    fetch("/api/discord")
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setDiscord)
-      .catch(() => {});
+    const load = (
+      url: string,
+      onData: (d: unknown) => void,
+      onError: () => void
+    ) => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      fetch(url, { signal: controller.signal })
+        .then((r) => (r.ok ? r.json() : Promise.reject()))
+        .then(onData)
+        .catch(onError)
+        .finally(() => clearTimeout(timeout));
+    };
+
+    load("/api/twitch", (d) => setTwitch(d as TwitchData), () => setTwitchError(true));
+    load("/api/discord", (d) => setDiscord(d as DiscordData), () => setDiscordError(true));
   }, []);
 
   const cardCls =
@@ -72,8 +82,10 @@ export default function ChannelCards() {
                 {twitch.followers.toLocaleString("es")} seguidores
                 {twitch.live && <span className="ml-1 text-live">· EN VIVO</span>}
               </>
+            ) : twitchError ? (
+              <span className="text-rose">No se pudo cargar — reintenta más tarde</span>
             ) : (
-              "Cargando…"
+              <span className="text-rose">Cargando…</span>
             )}
           </p>
           {twitch?.game && (
@@ -115,8 +127,10 @@ export default function ChannelCards() {
                 {discord.members.toLocaleString("es")} miembros
                 <span className="ml-1 text-live">· {discord.online} en línea</span>
               </>
+            ) : discordError ? (
+              <span className="text-rose">No se pudo cargar — reintenta más tarde</span>
             ) : (
-              "Cargando…"
+              <span className="text-rose">Cargando…</span>
             )}
           </p>
           <p className="truncate text-xs text-faint">DALIA.EXE</p>

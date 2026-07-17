@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { activeTournament } from "@/lib/data";
 
-export default function CheckinPanel() {
-  const [teams] = useState(activeTournament.registered);
+export interface CheckinTeam {
+  id: string;
+  name: string;
+  captain: string;
+  avgRank: string;
+  checkedIn: boolean;
+}
 
+export default function CheckinPanel({ teams }: { teams: CheckinTeam[] }) {
   if (teams.length === 0) {
     return (
       <div className="rounded-xl border border-line bg-surface p-8 text-center">
@@ -50,7 +54,7 @@ export default function CheckinPanel() {
         <ul className="divide-y divide-line/60">
           {teams.map((t, i) => (
             <motion.li
-              key={t.name}
+              key={t.id}
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}

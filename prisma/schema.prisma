@@ -86,6 +86,22 @@ model User {
 
   accounts Account[]
   sessions Session[]
+  lfgPosts LfgPost[]
+}
+
+// Anuncio de "buscar equipo" — el rango/región/Riot ID se toman del perfil
+// verificado del autor en el momento de publicar (snapshot, no editable).
+model LfgPost {
+  id        String   @id @default(cuid())
+  userId    String
+  role      String
+  looking   String
+  message   String
+  tierSnap  String
+  regionSnap String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Token OAuth del canal (broadcaster) de Dalia — fila única, usado para
@@ -99,13 +115,102 @@ model BroadcasterToken {
   updatedAt    DateTime @updatedAt
 }
 
+// Horario semanal de directos — editable desde /admin/calendario.
+model ScheduleEntry {
+  id        String   @id @default(cuid())
+  day       String
+  time      String
+  content   String
+  type      String // stream | special | event | off
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+// Sorteo de la tienda — editable desde /admin/sorteos.
+model Raffle {
+  id         String   @id @default(cuid())
+  name       String
+  category   String // Merch | Riot | Periféricos | Especial
+  cost       Int
+  maxEntries Int
+  entries    Int      @default(0)
+  closes     String
+  image      String?
+  active     Boolean  @default(true)
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+}
+
 // Donación registrada manualmente por un admin (sin integración de pago real).
 model Donor {
   id        String   @id @default(cuid())
   name      String
   amount    Float
-  currency  String   @default("EUR")
+  currency  String   @default("USD")
   note      String?
   date      DateTime @default(now())
   createdAt DateTime @default(now())
+}
+
+// Torneo activo — editable desde /admin/torneo.
+model Tournament {
+  id            String   @id @default(cuid())
+  name          String
+  format        String
+  date          String
+  maxTeams      Int
+  prize         String
+  patch         String
+  checkinOpen   Boolean  @default(false)
+  checkinCloses String
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  teams   TournamentTeam[]
+  matches BracketMatch[]
+}
+
+model TournamentTeam {
+  id           String   @id @default(cuid())
+  tournamentId String
+  name         String
+  captain      String
+  avgRank      String
+  checkedIn    Boolean  @default(false)
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  tournament Tournament     @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  matchesA   BracketMatch[] @relation("TeamA")
+  matchesB   BracketMatch[] @relation("TeamB")
+}
+
+// Casilla del cuadro de eliminación. round: 1 = cuartos, 2 = semis, 3 = final.
+model BracketMatch {
+  id           String   @id @default(cuid())
+  tournamentId String
+  round        Int
+  slot         Int
+  teamAId      String?
+  teamBId      String?
+  scoreA       Int      @default(0)
+  scoreB       Int      @default(0)
+  state        String   @default("pendiente") // pendiente | en_juego | terminada
+  hora         String
+
+  tournament Tournament      @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  teamA      TournamentTeam? @relation("TeamA", fields: [teamAId], references: [id])
+  teamB      TournamentTeam? @relation("TeamB", fields: [teamBId], references: [id])
+}
+
+model PastTournament {
+  id         String   @id @default(cuid())
+  name       String
+  date       String
+  winner     String
+  runnerUp   String
+  mvp        String
+  teamsCount Int
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
 }

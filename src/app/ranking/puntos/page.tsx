@@ -1,15 +1,21 @@
 import { PageHeader, Card } from "@/components/ui";
 import Reveal from "@/components/Reveal";
-import { pointsLeaderboard } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Ranking de Puntos — Dalia" };
 
 const MEDALS = ["text-gold", "text-[#a8b7c4]", "text-[#b0793f]"];
 
-export default function PuntosPage() {
-  const [first, second, third, ...rest] = pointsLeaderboard;
+export default async function PuntosPage() {
+  const users = await prisma.user.findMany({
+    where: { points: { gt: 0 } },
+    orderBy: { points: "desc" },
+    select: { id: true, name: true, points: true },
+  });
+
+  const [first, second, third, ...rest] = users;
   const podium = [second, first, third].filter(
-    (p): p is (typeof pointsLeaderboard)[number] => p !== undefined
+    (p): p is (typeof users)[number] => p !== undefined
   );
 
   return (
@@ -20,7 +26,7 @@ export default function PuntosPage() {
         lede="Los puntos se ganan viendo el directo, chateando y participando. Se gastan en sorteos y predicciones — y aquí se presume de ellos."
       />
 
-      {pointsLeaderboard.length === 0 ? (
+      {users.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-sm text-dim">
             Todavía no hay nadie en el ranking de puntos — se llena solo en cuanto
@@ -36,9 +42,9 @@ export default function PuntosPage() {
                 const place = i === 1 ? 1 : i === 0 ? 2 : 3;
                 const heights = ["h-28", "h-36", "h-24"];
                 return (
-                  <div key={p.user} className="flex flex-col items-center gap-2">
+                  <div key={p.id} className="flex flex-col items-center gap-2">
                     <p className={`font-display text-sm font-bold ${MEDALS[place - 1]}`}>
-                      {p.user}
+                      {p.name ?? "Sin nombre"}
                     </p>
                     <p className="tnum text-xs text-dim">{p.points.toLocaleString("es")} pts</p>
                     <div
@@ -60,12 +66,9 @@ export default function PuntosPage() {
               <Card className="overflow-hidden">
                 <ul className="divide-y divide-line/60">
                   {rest.map((p, i) => (
-                    <li key={p.user} className="flex items-center gap-4 px-5 py-3 hover:bg-hover">
+                    <li key={p.id} className="flex items-center gap-4 px-5 py-3 hover:bg-hover">
                       <span className="tnum w-6 text-right text-sm text-faint">{i + 4}</span>
-                      <span className="flex-1 font-semibold">{p.user}</span>
-                      <span className="tnum hidden text-xs text-faint sm:block">
-                        {p.hours} h viendo
-                      </span>
+                      <span className="flex-1 font-semibold">{p.name ?? "Sin nombre"}</span>
                       <span className="tnum font-display font-bold text-rose">
                         {p.points.toLocaleString("es")}
                       </span>
@@ -79,8 +82,8 @@ export default function PuntosPage() {
       )}
 
       <p className="mt-4 text-xs text-faint">
-        10 pts por cada 5 minutos de directo · bonus x2 para subs · el ranking se
-        reinicia cada temporada (3 meses) con premios para el top 10.
+        +100 pts al verificar tu Riot ID · más formas de ganar puntos próximamente ·
+        el ranking se reinicia cada temporada (3 meses) con premios para el top 10.
       </p>
     </div>
   );

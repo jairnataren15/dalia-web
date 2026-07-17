@@ -8,6 +8,9 @@ const NAV = [
   { href: "/admin", label: "Resumen" },
   { href: "/admin/usuarios", label: "Usuarios" },
   { href: "/admin/donadores", label: "Donadores" },
+  { href: "/admin/calendario", label: "Calendario" },
+  { href: "/admin/sorteos", label: "Sorteos" },
+  { href: "/admin/torneo", label: "Torneo" },
 ];
 
 export default async function AdminLayout({
@@ -33,7 +36,7 @@ export default async function AdminLayout({
           </p>
           <h1 className="text-2xl font-bold">Administración de DALIA.EXE</h1>
         </div>
-        <nav className="flex gap-2">
+        <nav className="flex flex-wrap gap-2">
           {NAV.map((item) => (
             <Link
               key={item.href}

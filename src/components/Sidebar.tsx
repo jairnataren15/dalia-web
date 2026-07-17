@@ -62,9 +62,11 @@ const ADMIN_GROUP: NavGroup = {
 function NavLinks({
   onNavigate,
   isAdmin,
+  verified,
 }: {
   onNavigate?: () => void;
   isAdmin?: boolean;
+  verified?: boolean;
 }) {
   const pathname = usePathname();
   const groups = isAdmin ? [...NAV, ADMIN_GROUP] : NAV;
@@ -84,6 +86,13 @@ function NavLinks({
                 item.href === "/"
                   ? pathname === "/"
                   : pathname.startsWith(item.href);
+              const isVerifyItem = item.href === "/verificar";
+              const label = isVerifyItem && verified ? "Cuenta verificada" : item.label;
+              const badge = isVerifyItem && verified ? "✓" : item.badge;
+              const badgeCls =
+                isVerifyItem && verified
+                  ? "bg-live-soft text-live"
+                  : "bg-rose/15 text-rose";
               return (
                 <li key={item.href}>
                   <Link
@@ -109,10 +118,12 @@ function NavLinks({
                     >
                       {item.icon}
                     </span>
-                    <span className="relative font-medium">{item.label}</span>
-                    {item.badge && (
-                      <span className="relative ml-auto rounded bg-rose/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-rose">
-                        {item.badge}
+                    <span className={`relative font-medium ${isVerifyItem && verified ? "text-live" : ""}`}>
+                      {label}
+                    </span>
+                    {badge && (
+                      <span className={`relative ml-auto rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${badgeCls}`}>
+                        {badge}
                       </span>
                     )}
                   </Link>
@@ -144,7 +155,13 @@ function Brand() {
   );
 }
 
-export default function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
+export default function Sidebar({
+  isAdmin,
+  verified,
+}: {
+  isAdmin?: boolean;
+  verified?: boolean;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -152,7 +169,7 @@ export default function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
       {/* Escritorio */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-line bg-surface lg:flex">
         <Brand />
-        <NavLinks isAdmin={isAdmin} />
+        <NavLinks isAdmin={isAdmin} verified={verified} />
         <div className="border-t border-line px-5 py-4">
           <div className="mb-2 flex gap-3 text-xs font-semibold">
             <a
@@ -204,7 +221,7 @@ export default function Sidebar({ isAdmin }: { isAdmin?: boolean }) {
               className="fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r border-line bg-surface lg:hidden"
             >
               <Brand />
-              <NavLinks onNavigate={() => setOpen(false)} isAdmin={isAdmin} />
+              <NavLinks onNavigate={() => setOpen(false)} isAdmin={isAdmin} verified={verified} />
             </motion.aside>
           </>
         )}

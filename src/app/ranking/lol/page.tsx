@@ -1,11 +1,13 @@
 import { PageHeader, Card } from "@/components/ui";
 import LolRanking from "@/components/ranking/LolRanking";
 import Comparator from "@/components/ranking/Comparator";
-import { members } from "@/lib/data";
+import { getVerifiedMembers } from "@/lib/ranking";
 
 export const metadata = { title: "Ranking LoL — Dalia" };
 
-export default function RankingLolPage() {
+export default async function RankingLolPage() {
+  const members = await getVerifiedMembers();
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
       <PageHeader
@@ -13,7 +15,7 @@ export default function RankingLolPage() {
         title="Clasificación DALIA.EXE"
         lede="Los miembros verificados de la comunidad, ordenados por rango. Actualizado cada 15 minutos desde la Riot API."
       />
-      <LolRanking />
+      <LolRanking members={members} />
       <div className="mt-14">
         <h2 className="mb-1 text-2xl font-bold">Comparador cara a cara</h2>
         <p className="mb-6 max-w-xl text-sm text-dim">
@@ -21,7 +23,7 @@ export default function RankingLolPage() {
           de las últimas 10 semanas.
         </p>
         {members.length >= 2 ? (
-          <Comparator />
+          <Comparator members={members} />
         ) : (
           <Card className="p-8 text-center">
             <p className="text-sm text-dim">

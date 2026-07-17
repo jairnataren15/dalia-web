@@ -10,7 +10,11 @@ const inputCls =
   "w-full rounded-lg border border-line bg-raised px-3 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-faint focus:border-rose";
 const labelCls = "mb-1.5 block text-xs font-semibold uppercase tracking-wider text-dim";
 
-export default function RegistrationForm() {
+export default function RegistrationForm({
+  defaultRiotId,
+}: {
+  defaultRiotId?: string | null;
+}) {
   const [mode, setMode] = useState<Mode>("solo");
   const [sent, setSent] = useState(false);
 
@@ -69,9 +73,26 @@ export default function RegistrationForm() {
       <div className="space-y-4">
         <div>
           <label htmlFor="riot" className={labelCls}>Tu Riot ID</label>
-          <input id="riot" required placeholder="Nombre#TAG" className={inputCls} />
+          {defaultRiotId ? (
+            <input
+              id="riot"
+              readOnly
+              value={defaultRiotId}
+              className={`${inputCls} cursor-not-allowed text-dim`}
+            />
+          ) : (
+            <input id="riot" required placeholder="Nombre#TAG" className={inputCls} />
+          )}
           <p className="mt-1 text-xs text-faint">
-            Validamos el rango automáticamente — tiene que coincidir con tu cuenta verificada.
+            {defaultRiotId ? (
+              "Es el Riot ID de tu cuenta verificada — no se puede cambiar aquí."
+            ) : (
+              <>
+                Verifica tu cuenta en{" "}
+                <a href="/verificar" className="text-rose hover:underline">/verificar</a>{" "}
+                para autocompletar esto.
+              </>
+            )}
           </p>
         </div>
 

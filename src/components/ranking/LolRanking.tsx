@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { members, winrate, rankLabel, champIcon, type Region } from "@/lib/data";
+import { winrate, rankLabel, champIcon, type Region, type Member } from "@/lib/data";
 import { RankBadge } from "@/components/ui";
 
 const REGIONS: (Region | "GLOBAL")[] = ["GLOBAL", "EUW", "NA", "LAN", "LAS"];
 
-export default function LolRanking() {
+export default function LolRanking({ members }: { members: Member[] }) {
   const [region, setRegion] = useState<(typeof REGIONS)[number]>("GLOBAL");
 
   const filtered = members.filter(
@@ -38,6 +38,15 @@ export default function LolRanking() {
         ))}
       </div>
 
+      {filtered.length === 0 ? (
+        <div className="rounded-xl border border-line bg-surface p-8 text-center">
+          <p className="text-sm text-dim">
+            Todavía no hay miembros verificados{region === "GLOBAL" ? "" : ` en ${region}`}.
+            En cuanto alguien vincule su Riot ID en{" "}
+            <a href="/verificar" className="text-rose hover:underline">/verificar</a>, aparece aquí.
+          </p>
+        </div>
+      ) : (
       <div className="overflow-x-auto rounded-xl border border-line bg-surface">
         <table className="w-full min-w-155 text-sm">
           <thead>
@@ -96,22 +105,40 @@ export default function LolRanking() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <RankBadge tier={m.tier} division={m.division} lp={m.lp} />
+                      {m.unranked ? (
+                        <span className="text-xs italic text-faint">Sin clasificar</span>
+                      ) : (
+                        <RankBadge tier={m.tier} division={m.division} lp={m.lp} />
+                      )}
                     </td>
                     <td className="tnum px-4 py-3 text-right text-dim">
-                      <span className="text-live">{m.wins}</span> /{" "}
-                      <span className="text-danger">{m.losses}</span>
+                      {m.unranked ? (
+                        "—"
+                      ) : (
+                        <>
+                          <span className="text-live">{m.wins}</span> /{" "}
+                          <span className="text-danger">{m.losses}</span>
+                        </>
+                      )}
                     </td>
                     <td className="tnum px-4 py-3 text-right font-semibold">
-                      <span className={wr >= 53 ? "text-live" : wr < 50 ? "text-danger" : ""}>
-                        {wr}%
-                      </span>
+                      {m.unranked ? (
+                        <span className="text-faint">—</span>
+                      ) : (
+                        <span className={wr >= 53 ? "text-live" : wr < 50 ? "text-danger" : ""}>
+                          {wr}%
+                        </span>
+                      )}
                     </td>
                     <td className="tnum px-4 py-3 text-right">
-                      {m.streak > 0 ? (
+                      {m.unranked ? (
+                        <span className="text-faint">—</span>
+                      ) : m.streak > 0 ? (
                         <span className="text-live">▲ {m.streak}</span>
-                      ) : (
+                      ) : m.streak < 0 ? (
                         <span className="text-danger">▼ {Math.abs(m.streak)}</span>
+                      ) : (
+                        <span className="text-faint">—</span>
                       )}
                     </td>
                   </motion.tr>
@@ -121,10 +148,13 @@ export default function LolRanking() {
           </AnimatePresence>
         </table>
       </div>
-      <p className="mt-2 text-xs text-faint">
-        {rankLabel(members[0])} es el rango más alto de DALIA.EXE ahora mismo ·
-        Los nombres enlazan a op.gg
-      </p>
+      )}
+      {members[0] && !members[0].unranked && (
+        <p className="mt-2 text-xs text-faint">
+          {rankLabel(members[0])} es el rango más alto de DALIA.EXE ahora mismo ·
+          Los nombres enlazan a op.gg
+        </p>
+      )}
     </div>
   );
 }

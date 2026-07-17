@@ -1,6 +1,6 @@
 import { PageHeader, Card } from "@/components/ui";
 import Reveal from "@/components/Reveal";
-import { schedule } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Calendario — Dalia" };
 
@@ -11,7 +11,9 @@ const TYPE_STYLES: Record<string, { label: string; cls: string }> = {
   off: { label: "Descanso", cls: "bg-raised text-faint" },
 };
 
-export default function CalendarioPage() {
+export default async function CalendarioPage() {
+  const schedule = await prisma.scheduleEntry.findMany({ orderBy: { order: "asc" } });
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 lg:px-8">
       <PageHeader
@@ -23,7 +25,7 @@ export default function CalendarioPage() {
         {schedule.map((s, i) => {
           const t = TYPE_STYLES[s.type];
           return (
-            <Reveal key={s.day} delay={i * 0.04}>
+            <Reveal key={s.id} delay={i * 0.04}>
               <Card
                 className={`flex items-center gap-4 p-4 ${
                   s.type === "event" ? "border-live/40" : ""

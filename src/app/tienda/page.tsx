@@ -2,10 +2,16 @@ import { PageHeader, Card } from "@/components/ui";
 import Reveal from "@/components/Reveal";
 import RaffleGrid from "@/components/tienda/RaffleGrid";
 import { pastWinners } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Tienda — Dalia" };
 
-export default function TiendaPage() {
+export default async function TiendaPage() {
+  const raffles = await prisma.raffle.findMany({
+    where: { active: true },
+    orderBy: { order: "asc" },
+  });
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
       <PageHeader
@@ -13,7 +19,18 @@ export default function TiendaPage() {
         title="Sorteos por puntos"
         lede="Cambia tus puntos DALIA.EXE por participaciones. Los ganadores se eligen en directo con todas las participaciones en pantalla."
       />
-      <RaffleGrid />
+      <RaffleGrid
+        raffles={raffles.map((r) => ({
+          id: r.id,
+          name: r.name,
+          category: r.category as "Merch" | "Riot" | "Periféricos" | "Especial",
+          cost: r.cost,
+          entries: r.entries,
+          maxEntries: r.maxEntries,
+          closes: r.closes,
+          image: r.image ?? undefined,
+        }))}
+      />
 
       <Reveal>
         <section className="mt-14 pb-8">

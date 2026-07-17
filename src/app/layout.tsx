@@ -29,11 +29,12 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
   const isAdmin = session?.user?.role === "ADMIN";
+  const verified = session?.user?.riotVerified ?? false;
 
   return (
     <html lang="es" className={`${chakra.variable} ${inter.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <Sidebar isAdmin={isAdmin} />
+        <Sidebar isAdmin={isAdmin} verified={verified} />
         <div className="lg:pl-60">
           <Topbar />
           <main className="striped-bg min-h-screen">{children}</main>

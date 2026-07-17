@@ -1,10 +1,12 @@
 import { PageHeader, Card } from "@/components/ui";
 import Reveal from "@/components/Reveal";
-import { pastTournaments } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Historial de torneos — Dalia" };
 
-export default function HistorialPage() {
+export default async function HistorialPage() {
+  const pastTournaments = await prisma.pastTournament.findMany({ orderBy: { order: "asc" } });
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 lg:px-8">
       <PageHeader
@@ -22,7 +24,7 @@ export default function HistorialPage() {
       )}
       <div className="space-y-4">
         {pastTournaments.map((t, i) => (
-          <Reveal key={t.name} delay={i * 0.06}>
+          <Reveal key={t.id} delay={i * 0.06}>
             <Card className="flex flex-col justify-between gap-4 p-6 sm:flex-row sm:items-center">
               <div>
                 <h2 className="font-display text-lg font-bold">{t.name}</h2>

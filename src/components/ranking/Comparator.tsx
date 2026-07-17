@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  members,
   winrate,
   rankLabel,
   champIcon,
@@ -96,12 +95,14 @@ function PlayerCol({ m, align }: { m: Member; align: "left" | "right" }) {
   );
 }
 
-export default function Comparator() {
-  const [aId, setAId] = useState("dalia");
-  const [bId, setBId] = useState("kata");
+export default function Comparator({ members }: { members: Member[] }) {
+  const [aId, setAId] = useState(members[0]?.id ?? "");
+  const [bId, setBId] = useState(members[1]?.id ?? "");
 
-  const a = members.find((m) => m.id === aId)!;
-  const b = members.find((m) => m.id === bId)!;
+  const a = members.find((m) => m.id === aId);
+  const b = members.find((m) => m.id === bId);
+
+  if (!a || !b) return null;
 
   const selectCls =
     "w-full rounded-lg border border-line bg-raised px-3 py-2 text-sm font-medium text-ink outline-none transition-colors focus:border-rose";
@@ -143,7 +144,9 @@ export default function Comparator() {
 
           {/* Stats */}
           <StatRow label="Winrate" a={winrate(a)} b={winrate(b)} format={(v) => `${v}%`} />
-          <StatRow label="KDA medio" a={a.kda} b={b.kda} format={(v) => v.toFixed(1)} />
+          {(a.kda > 0 || b.kda > 0) && (
+            <StatRow label="KDA medio" a={a.kda} b={b.kda} format={(v) => v.toFixed(1)} />
+          )}
           <StatRow label="Victorias" a={a.wins} b={b.wins} />
           <StatRow label="Partidas" a={a.wins + a.losses} b={b.wins + b.losses} />
           <StatRow

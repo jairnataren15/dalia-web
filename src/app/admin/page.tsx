@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { Card } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
-import { activeTournament, raffles, members } from "@/lib/data";
 
 export default async function AdminDashboard() {
-  const [totalUsers, verifiedUsers, adminCount, subCount, broadcaster, donorTotal] =
+  const [totalUsers, verifiedUsers, adminCount, subCount, broadcaster, donorTotal, activeRaffleCount, teamsCount] =
     await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { riotVerified: true } }),
@@ -12,6 +11,8 @@ export default async function AdminDashboard() {
       prisma.user.count({ where: { subTier: { not: null } } }),
       prisma.broadcasterToken.findUnique({ where: { id: "dalia" } }),
       prisma.donor.aggregate({ _sum: { amount: true }, _count: true }),
+      prisma.raffle.count({ where: { active: true } }),
+      prisma.tournamentTeam.count({ where: { tournament: { active: true } } }),
     ]);
 
   const stats = [
@@ -19,9 +20,8 @@ export default async function AdminDashboard() {
     { label: "Riot ID verificados", value: verifiedUsers },
     { label: "Administradores", value: adminCount },
     { label: "Suscriptores detectados", value: subCount },
-    { label: "Miembros en el ranking de LoL", value: members.length },
-    { label: "Equipos inscritos · Copa activa", value: activeTournament.registered.length },
-    { label: "Sorteos activos en la tienda", value: raffles.length },
+    { label: "Equipos inscritos · Copa activa", value: teamsCount },
+    { label: "Sorteos activos en la tienda", value: activeRaffleCount },
     { label: "Donaciones registradas", value: donorTotal._count },
   ];
 

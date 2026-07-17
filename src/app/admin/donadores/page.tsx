@@ -23,7 +23,7 @@ export default async function AdminDonorsPage() {
         <Card className="p-5">
           <p className="text-xs uppercase tracking-wider text-faint">Total recaudado</p>
           <p className="tnum font-display text-2xl font-bold text-gold">
-            {total.toLocaleString("es", { style: "currency", currency: "EUR" })}
+            {total.toLocaleString("es", { style: "currency", currency: "USD" })}
           </p>
         </Card>
         <Card className="p-5">
@@ -46,7 +46,7 @@ export default async function AdminDonorsPage() {
             type="number"
             step="0.01"
             min="0.01"
-            placeholder="Cantidad €"
+            placeholder="Cantidad $"
             className={inputCls}
           />
           <input name="note" placeholder="Nota (opcional)" className={inputCls} />
@@ -74,7 +74,7 @@ export default async function AdminDonorsPage() {
                 </div>
                 <span className="text-xs text-dim">{d.date.toLocaleDateString("es")}</span>
                 <span className="tnum font-display font-bold text-gold">
-                  {d.amount.toLocaleString("es", { style: "currency", currency: "EUR" })}
+                  {d.amount.toLocaleString("es", { style: "currency", currency: "USD" })}
                 </span>
                 <form
                   action={async () => {

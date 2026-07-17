@@ -137,3 +137,77 @@ export async function checkSubscription(
   if (!entry) return { subscribed: false };
   return { subscribed: true, tier: Number(entry.tier) };
 }
+
+// ——— Token de aplicación (sin usuario) — para leer datos públicos como VODs ———
+
+let appToken: { token: string; expiresAt: number } | null = null;
+
+async function getAppAccessToken(): Promise<string> {
+  if (appToken && appToken.expiresAt > Date.now()) return appToken.token;
+
+  const res = await fetch(TOKEN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId(),
+      client_secret: clientSecret(),
+      grant_type: "client_credentials",
+    }),
+  });
+  if (!res.ok) throw new Error(`Twitch app token ${res.status}`);
+  const json = await res.json();
+  appToken = { token: json.access_token, expiresAt: Date.now() + json.expires_in * 1000 - 60_000 };
+  return appToken.token;
+}
+
+/** Busca un usuario público de Twitch por su login (sin necesitar su token). */
+export async function getUserByLogin(login: string): Promise<TwitchUser | null> {
+  const token = await getAppAccessToken();
+  const res = await fetch(`${HELIX}/users?login=${encodeURIComponent(login)}`, {
+    headers: { Authorization: `Bearer ${token}`, "Client-Id": clientId() },
+  });
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json.data[0] ?? null;
+}
+
+export interface TwitchVideo {
+  id: string;
+  title: string;
+  url: string;
+  thumbnailUrl: string;
+  duration: string; // ej. "2h17m12s"
+  viewCount: number;
+  createdAt: string;
+}
+
+/** Últimos VODs (directos pasados) públicos de un canal. */
+export async function getBroadcasterVideos(
+  userId: string,
+  count = 4
+): Promise<TwitchVideo[]> {
+  const token = await getAppAccessToken();
+  const res = await fetch(
+    `${HELIX}/videos?user_id=${userId}&type=archive&first=${count}`,
+    { headers: { Authorization: `Bearer ${token}`, "Client-Id": clientId() } }
+  );
+  if (!res.ok) return [];
+  const json = await res.json();
+  return (json.data as Array<{
+    id: string;
+    title: string;
+    url: string;
+    thumbnail_url: string;
+    duration: string;
+    view_count: number;
+    created_at: string;
+  }>).map((v) => ({
+    id: v.id,
+    title: v.title,
+    url: v.url,
+    thumbnailUrl: v.thumbnail_url.replace("%{width}", "440").replace("%{height}", "248"),
+    duration: v.duration,
+    viewCount: v.view_count,
+    createdAt: v.created_at,
+  }));
+}

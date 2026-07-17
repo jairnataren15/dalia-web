@@ -3,18 +3,41 @@ import Reveal from "@/components/Reveal";
 import { Card } from "@/components/ui";
 import Countdown from "@/components/Countdown";
 import ChannelCards from "@/components/ChannelCards";
-import { DISCORD_URL } from "@/lib/channels";
-import {
-  champSplash,
-  champIcon,
-  latestVideos,
-  members,
-  rankLabel,
-  activeTournament,
-} from "@/lib/data";
+import { DISCORD_URL, TWITCH_USER } from "@/lib/channels";
+import { getVerifiedMembers } from "@/lib/ranking";
+import { getUserByLogin, getBroadcasterVideos } from "@/lib/twitch";
+import { getActiveTournament } from "@/lib/tournament";
+import { champSplash, champIcon, rankLabel, winrate } from "@/lib/data";
 
-export default function Home() {
-  const dalia = members.find((m) => m.id === "dalia")!;
+function formatDuration(d: string): string {
+  // "2h17m12s" -> "2:17:12" (o "17:12" si no hay horas)
+  const m = d.match(/(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?/);
+  const h = Number(m?.[1] ?? 0);
+  const min = Number(m?.[2] ?? 0);
+  const s = Number(m?.[3] ?? 0);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${pad(min)}:${pad(s)}` : `${min}:${pad(s)}`;
+}
+
+function timeAgo(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const days = Math.floor(diffMs / 86_400_000);
+  if (days < 1) return "hoy";
+  if (days === 1) return "ayer";
+  if (days < 7) return `hace ${days} días`;
+  const weeks = Math.floor(days / 7);
+  return `hace ${weeks} semana${weeks > 1 ? "s" : ""}`;
+}
+
+export default async function Home() {
+  const members = await getVerifiedMembers();
+  const dalia = members.find((m) => m.id === "dalia") ?? members[0];
+  const tournament = await getActiveTournament();
+
+  const twitchUser = await getUserByLogin(TWITCH_USER).catch(() => null);
+  const videos = twitchUser
+    ? await getBroadcasterVideos(twitchUser.id, 4).catch(() => [])
+    : [];
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
@@ -22,7 +45,7 @@ export default function Home() {
       <Reveal>
         <section className="relative overflow-hidden rounded-2xl border border-line">
           <img
-            src={champSplash(dalia.mains[0], 0)}
+            src={champSplash(dalia?.mains[0] ?? "Ahri", 0)}
             alt=""
             className="absolute inset-0 h-full w-full object-cover object-[center_20%] opacity-40"
           />
@@ -71,16 +94,18 @@ export default function Home() {
           <Card className="p-4">
             <p className="text-xs uppercase tracking-wider text-faint">Racha de Dalia</p>
             <p className="mt-1 font-display text-2xl font-bold text-live">
-              {dalia.streak} victorias
+              {dalia ? `${dalia.streak} victorias` : "—"}
             </p>
             <p className="text-xs text-dim">seguidas en ranked</p>
           </Card>
           <Card className="p-4">
             <p className="text-xs uppercase tracking-wider text-faint">Rango actual</p>
             <p className="mt-1 font-display text-2xl font-bold text-[#5e9ee6]">
-              {rankLabel(dalia)}
+              {dalia ? rankLabel(dalia) : "—"}
             </p>
-            <p className="tnum text-xs text-dim">{dalia.lp} LP · {Math.round((dalia.wins / (dalia.wins + dalia.losses)) * 100)}% WR</p>
+            <p className="tnum text-xs text-dim">
+              {dalia ? `${dalia.lp} LP · ${winrate(dalia)}% WR` : "Sin datos"}
+            </p>
           </Card>
           <Card className="p-4">
             <p className="text-xs uppercase tracking-wider text-faint">Miembros verificados</p>
@@ -90,7 +115,7 @@ export default function Home() {
           <Card className="p-4">
             <p className="text-xs uppercase tracking-wider text-faint">Próximo evento</p>
             <p className="mt-1 font-display text-lg font-bold text-gold">
-              {activeTournament.name}
+              {tournament?.name ?? "Por anunciar"}
             </p>
             <Countdown />
           </Card>
@@ -105,35 +130,51 @@ export default function Home() {
         </section>
       </Reveal>
 
-      {/* Últimos vídeos */}
+      {/* VODs reales de Twitch */}
       <Reveal delay={0.05}>
         <section className="mt-10">
-          <h2 className="mb-4 text-xl font-bold">Últimos vídeos</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {latestVideos.map((v) => (
-              <Card key={v.title} className="group overflow-hidden transition-colors hover:bg-hover">
-                <div className="relative aspect-video overflow-hidden">
-                  <img
-                    src={champSplash(v.champ, 0)}
-                    alt=""
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <span className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 text-[11px] font-semibold">
-                    {v.duration}
-                  </span>
-                  <span className="absolute left-2 top-2 rounded bg-rose px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-base">
-                    #{v.category}
-                  </span>
-                </div>
-                <div className="p-3">
-                  <p className="line-clamp-2 text-sm font-semibold leading-snug">
-                    {v.title}
-                  </p>
-                  <p className="mt-1 text-xs text-dim">{v.views} visitas</p>
-                </div>
-              </Card>
-            ))}
-          </div>
+          <h2 className="mb-4 text-xl font-bold">Directos anteriores</h2>
+          {videos.length === 0 ? (
+            <Card className="p-6 text-center text-sm text-dim">
+              No hay VODs disponibles ahora mismo — vuelve después de un directo.
+            </Card>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {videos.map((v) => (
+                <a
+                  key={v.id}
+                  href={v.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group block"
+                >
+                  <Card className="overflow-hidden transition-colors hover:bg-hover">
+                    <div className="relative aspect-video overflow-hidden bg-raised">
+                      <img
+                        src={v.thumbnailUrl}
+                        alt=""
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <span className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 text-[11px] font-semibold">
+                        {formatDuration(v.duration)}
+                      </span>
+                      <span className="absolute left-2 top-2 rounded bg-[#9147ff] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                        VOD
+                      </span>
+                    </div>
+                    <div className="p-3">
+                      <p className="line-clamp-2 text-sm font-semibold leading-snug">
+                        {v.title}
+                      </p>
+                      <p className="mt-1 text-xs text-dim">
+                        {v.viewCount.toLocaleString("es")} vistas · {timeAgo(v.createdAt)}
+                      </p>
+                    </div>
+                  </Card>
+                </a>
+              ))}
+            </div>
+          )}
         </section>
       </Reveal>
 
@@ -146,29 +187,35 @@ export default function Home() {
               Ver ranking completo →
             </Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {members.slice(0, 3).map((m, i) => (
-              <Card key={m.id} className="relative overflow-hidden p-5">
-                <span className="absolute -right-2 -top-4 font-display text-7xl font-bold text-line select-none">
-                  {i + 1}
-                </span>
-                <div className="relative flex items-center gap-3">
-                  <img
-                    src={champIcon(m.mains[0])}
-                    alt={m.mains[0]}
-                    className="h-12 w-12 rounded-lg border border-line"
-                  />
-                  <div>
-                    <p className="font-display font-bold">
-                      {m.riotId}
-                      <span className="ml-1 text-xs font-normal text-faint">#{m.tag}</span>
-                    </p>
-                    <p className="text-sm text-dim">{rankLabel(m)} · <span className="tnum">{m.lp} LP</span></p>
+          {members.length === 0 ? (
+            <Card className="p-8 text-center text-sm text-dim">
+              Todavía no hay miembros verificados en el ranking.
+            </Card>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-3">
+              {members.slice(0, 3).map((m, i) => (
+                <Card key={m.id} className="relative overflow-hidden p-5">
+                  <span className="absolute -right-2 -top-4 font-display text-7xl font-bold text-line select-none">
+                    {i + 1}
+                  </span>
+                  <div className="relative flex items-center gap-3">
+                    <img
+                      src={champIcon(m.mains[0])}
+                      alt={m.mains[0]}
+                      className="h-12 w-12 rounded-lg border border-line"
+                    />
+                    <div>
+                      <p className="font-display font-bold">
+                        {m.riotId}
+                        <span className="ml-1 text-xs font-normal text-faint">#{m.tag}</span>
+                      </p>
+                      <p className="text-sm text-dim">{rankLabel(m)} · <span className="tnum">{m.lp} LP</span></p>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </section>
       </Reveal>
     </div>

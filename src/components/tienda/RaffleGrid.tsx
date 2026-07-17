@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { raffles, champSplash, type RaffleItem } from "@/lib/data";
+import { champSplash, type RaffleItem } from "@/lib/data";
 
 const CATEGORIES = ["Todos", "Riot", "Merch", "Periféricos", "Especial"] as const;
 
@@ -64,7 +64,7 @@ function RaffleCard({ item, index }: { item: RaffleItem; index: number }) {
   );
 }
 
-export default function RaffleGrid() {
+export default function RaffleGrid({ raffles }: { raffles: RaffleItem[] }) {
   const [cat, setCat] = useState<(typeof CATEGORIES)[number]>("Todos");
 
   const filtered = raffles.filter((r) => cat === "Todos" || r.category === cat);
@@ -92,13 +92,19 @@ export default function RaffleGrid() {
         ))}
       </div>
 
-      <motion.div layout className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <AnimatePresence mode="popLayout">
-          {filtered.map((item, i) => (
-            <RaffleCard key={item.id} item={item} index={i} />
-          ))}
-        </AnimatePresence>
-      </motion.div>
+      {filtered.length === 0 ? (
+        <p className="py-12 text-center text-sm text-faint">
+          No hay sorteos activos en esta categoría ahora mismo.
+        </p>
+      ) : (
+        <motion.div layout className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <AnimatePresence mode="popLayout">
+            {filtered.map((item, i) => (
+              <RaffleCard key={item.id} item={item} index={i} />
+            ))}
+          </AnimatePresence>
+        </motion.div>
+      )}
     </div>
   );
 }

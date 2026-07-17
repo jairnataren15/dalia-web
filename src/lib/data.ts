@@ -42,6 +42,7 @@ export interface Member {
   kda: number;
   streak: number; // >0 racha de victorias, <0 de derrotas
   lpHistory: number[]; // LP total acumulado por semana (últimas 10)
+  unranked?: boolean; // true = verificado pero sin partidas clasificatorias
 }
 
 export const members: Member[] = [
@@ -49,10 +50,10 @@ export const members: Member[] = [
 ];
 
 export const rankLabel = (m: Member) =>
-  m.division ? `${m.tier} ${m.division}` : m.tier;
+  m.unranked ? "Sin clasificar" : m.division ? `${m.tier} ${m.division}` : m.tier;
 
 export const winrate = (m: Member) =>
-  Math.round((m.wins / (m.wins + m.losses)) * 100);
+  m.wins + m.losses === 0 ? 0 : Math.round((m.wins / (m.wins + m.losses)) * 100);
 
 // ——— Equipos ———
 export interface Team {
@@ -66,57 +67,6 @@ export interface Team {
 
 export const teams: Team[] = [];
 
-// ——— Torneo activo ———
-export type MatchState = "pendiente" | "en_juego" | "terminada";
-
-export interface BracketMatch {
-  id: string;
-  round: number; // 1 = cuartos, 2 = semis, 3 = final
-  teamA: string | null;
-  teamB: string | null;
-  scoreA: number;
-  scoreB: number;
-  state: MatchState;
-  hora: string;
-}
-
-export interface TournamentTeamEntry {
-  name: string;
-  captain: string;
-  avgRank: string;
-  checkedIn: boolean | null; // null = ventana no abierta aún
-}
-
-export const activeTournament = {
-  name: "Copa DALIA.EXE #3",
-  format: "Eliminación simple · Bo1 (final Bo3)",
-  date: "Sábado 25 de julio, 18:00 CET",
-  maxTeams: 8,
-  prize: "50€ en RP por jugador + rol exclusivo en Discord",
-  patch: "14.14",
-  checkinOpen: true,
-  checkinCloses: "17:45 CET",
-  registered: [] as TournamentTeamEntry[],
-  bracket: [
-    { id: "q1", round: 1, teamA: null, teamB: null, scoreA: 0, scoreB: 0, state: "pendiente", hora: "18:00" },
-    { id: "q2", round: 1, teamA: null, teamB: null, scoreA: 0, scoreB: 0, state: "pendiente", hora: "18:00" },
-    { id: "q3", round: 1, teamA: null, teamB: null, scoreA: 0, scoreB: 0, state: "pendiente", hora: "19:00" },
-    { id: "q4", round: 1, teamA: null, teamB: null, scoreA: 0, scoreB: 0, state: "pendiente", hora: "19:00" },
-    { id: "s1", round: 2, teamA: null, teamB: null, scoreA: 0, scoreB: 0, state: "pendiente", hora: "20:00" },
-    { id: "s2", round: 2, teamA: null, teamB: null, scoreA: 0, scoreB: 0, state: "pendiente", hora: "20:00" },
-    { id: "f1", round: 3, teamA: null, teamB: null, scoreA: 0, scoreB: 0, state: "pendiente", hora: "21:00" },
-  ] as BracketMatch[],
-};
-
-export const pastTournaments: {
-  name: string;
-  date: string;
-  winner: string;
-  runnerUp: string;
-  mvp: string;
-  teamsCount: number;
-}[] = [];
-
 // ——— Tienda / sorteos ———
 export interface RaffleItem {
   id: string;
@@ -128,17 +78,6 @@ export interface RaffleItem {
   closes: string;
   image?: string; // champ para ilustrar premios Riot
 }
-
-export const raffles: RaffleItem[] = [
-  { id: "r1", name: "Skin Legendaria a elegir", category: "Riot", cost: 500, entries: 342, maxEntries: 1000, closes: "Viernes 20:00", image: "Ahri" },
-  { id: "r2", name: "3250 RP", category: "Riot", cost: 300, entries: 518, maxEntries: 800, closes: "Viernes 20:00", image: "Lux" },
-  { id: "r3", name: "Sudadera oficial DALIA.EXE", category: "Merch", cost: 400, entries: 156, maxEntries: 500, closes: "Domingo 22:00" },
-  { id: "r4", name: "Taza + stickers DALIA.EXE", category: "Merch", cost: 150, entries: 89, maxEntries: 300, closes: "Domingo 22:00" },
-  { id: "r5", name: "Teclado mecánico RGB", category: "Periféricos", cost: 800, entries: 267, maxEntries: 600, closes: "Fin de mes" },
-  { id: "r6", name: "Auriculares gaming", category: "Periféricos", cost: 600, entries: 198, maxEntries: 500, closes: "Fin de mes" },
-  { id: "r7", name: "Partida de flex con Dalia", category: "Especial", cost: 250, entries: 445, maxEntries: 600, closes: "Cada domingo", image: "Rakan" },
-  { id: "r8", name: "Revisión de VOD en directo", category: "Especial", cost: 200, entries: 122, maxEntries: 400, closes: "Cada jueves", image: "Vex" },
-];
 
 export const pastWinners: { prize: string; winner: string; date: string }[] = [];
 
@@ -154,34 +93,6 @@ export const activePrediction = {
 
 export const predictionRanking: { user: string; aciertos: number; fallos: number }[] = [];
 
-// ——— Puntos ———
-export const pointsLeaderboard: { user: string; points: number; hours: number }[] = [];
-
-// ——— Calendario ———
-export const schedule = [
-  { day: "Lunes", time: "18:00 – 22:00", content: "Ranked grind + charla con el chat", type: "stream" },
-  { day: "Martes", time: "—", content: "Descanso", type: "off" },
-  { day: "Miércoles", time: "18:00 – 22:00", content: "Ranked + revisión de VODs de la comunidad", type: "stream" },
-  { day: "Jueves", time: "18:00 – 23:00", content: "Flex con viewers + sorteo semanal", type: "special" },
-  { day: "Viernes", time: "17:00 – 22:00", content: "Ranked grind", type: "stream" },
-  { day: "Sábado", time: "18:00 – 00:00", content: "Copa DALIA.EXE #3 · torneo de la comunidad", type: "event" },
-  { day: "Domingo", time: "16:00 – 20:00", content: "ARAMs + partida de flex del sorteo", type: "special" },
-];
-
-// ——— LFG ———
-export interface LfgPost {
-  id: string;
-  user: string;
-  tier: Tier;
-  role: Role;
-  region: Region;
-  looking: string;
-  message: string;
-  posted: string;
-}
-
-export const lfgPosts: LfgPost[] = [];
-
 // ——— FAQ ———
 export const faqItems = [
   { q: "¿Cómo gano puntos DALIA.EXE?", a: "Viendo el directo (10 pts cada 5 min), chateando, participando en predicciones y torneos, y con bonus por rachas de días seguidos viendo el stream." },
@@ -193,16 +104,3 @@ export const faqItems = [
   { q: "¿Qué pasa si mi equipo no hace check-in?", a: "Si al cierre de la ventana de check-in faltan jugadores, la plaza pasa al primer equipo de la lista de espera. Recibirás aviso por Discord cuando abra la ventana." },
   { q: "¿Las predicciones usan dinero real?", a: "No. Todo funciona con puntos DALIA.EXE, que no tienen valor monetario ni se pueden comprar. Es solo por diversión y por el ranking." },
 ];
-
-// ——— Inicio ———
-export const latestVideos = [
-  { title: "PENTAKILL con Seraphine subiendo a Platino | Road to Diamante #12", category: "LOL", duration: "18:42", views: "24K", champ: "Seraphine" },
-  { title: "Tier list de midlaners del parche 14.14", category: "LOL", duration: "31:05", views: "41K", champ: "Syndra" },
-  { title: "Así fue la COPA DALIA.EXE #2 | Resumen", category: "EVENTOS", duration: "22:17", views: "18K", champ: "Rakan" },
-  { title: "Reaccionando a vuestras peores rankeds", category: "COMUNIDAD", duration: "27:33", views: "35K", champ: "Amumu" },
-];
-
-export const channelInfo = {
-  youtube: { name: "Dalia", subs: "128K", videos: "842" },
-  youtubeClips: { name: "Dalia Clips", subs: "45K", videos: "1.2K" },
-};

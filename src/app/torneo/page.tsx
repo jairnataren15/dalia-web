@@ -2,13 +2,34 @@ import Link from "next/link";
 import { PageHeader, Card } from "@/components/ui";
 import Reveal from "@/components/Reveal";
 import Bracket from "@/components/torneo/Bracket";
-import { activeTournament } from "@/lib/data";
+import { getActiveTournament } from "@/lib/tournament";
+import { auth } from "@/auth";
 
 export const metadata = { title: "Copa DALIA.EXE — Dalia" };
 
-export default function TorneoPage() {
-  const t = activeTournament;
-  const checkedIn = t.registered.filter((r) => r.checkedIn).length;
+export default async function TorneoPage() {
+  const [t, session] = await Promise.all([getActiveTournament(), auth()]);
+  const isAdmin = session?.user?.role === "ADMIN";
+
+  if (!t) {
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
+        <PageHeader eyebrow="Torneo" title="Sin torneo activo" lede="Todavía no hay ninguna copa programada." />
+      </div>
+    );
+  }
+
+  const checkedIn = t.teams.filter((r) => r.checkedIn).length;
+  const matches = t.matches.map((m) => ({
+    id: m.id,
+    round: m.round,
+    hora: m.hora,
+    state: m.state,
+    scoreA: m.scoreA,
+    scoreB: m.scoreB,
+    teamA: t.teams.find((tm) => tm.id === m.teamAId) ?? null,
+    teamB: t.teams.find((tm) => tm.id === m.teamBId) ?? null,
+  }));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
@@ -28,13 +49,13 @@ export default function TorneoPage() {
           <Card className="p-4">
             <p className="text-xs uppercase tracking-wider text-faint">Equipos</p>
             <p className="mt-1 font-display text-2xl font-bold">
-              {t.registered.length}<span className="text-dim">/{t.maxTeams}</span>
+              {t.teams.length}<span className="text-dim">/{t.maxTeams}</span>
             </p>
           </Card>
           <Card className="p-4">
             <p className="text-xs uppercase tracking-wider text-faint">Check-in</p>
             <p className="mt-1 font-display text-2xl font-bold text-live">
-              {checkedIn}<span className="text-dim">/{t.registered.length}</span>
+              {checkedIn}<span className="text-dim">/{t.teams.length}</span>
             </p>
             <p className="text-xs text-dim">cierra a las {t.checkinCloses}</p>
           </Card>
@@ -67,13 +88,31 @@ export default function TorneoPage() {
           >
             Torneos anteriores
           </Link>
+          {isAdmin && (
+            <Link
+              href="/admin/torneo"
+              className="rounded-lg border border-rose/40 bg-rose/10 px-5 py-2.5 font-display text-sm font-semibold text-rose transition-colors hover:border-rose"
+            >
+              Editar torneo (admin)
+            </Link>
+          )}
         </div>
       </Reveal>
 
       {/* Bracket */}
       <Reveal delay={0.1}>
-        <h2 className="mb-4 text-2xl font-bold">Cuadro del torneo</h2>
-        <Bracket />
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Cuadro del torneo</h2>
+          {isAdmin && (
+            <span className="text-xs text-faint">Modo admin: arrastra equipos entre casillas.</span>
+          )}
+        </div>
+        <Bracket
+          matches={matches}
+          teams={t.teams.map((tm) => ({ id: tm.id, name: tm.name }))}
+          tournamentId={t.id}
+          editable={isAdmin}
+        />
       </Reveal>
     </div>
   );
