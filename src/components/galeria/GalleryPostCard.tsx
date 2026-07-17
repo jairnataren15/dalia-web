@@ -1,6 +1,7 @@
 "use client";
 
 import UserAvatar from "@/components/UserAvatar";
+import CustomVideoPlayer from "@/components/galeria/CustomVideoPlayer";
 import { deleteGalleryPost } from "@/app/galeria/actions";
 
 export interface GalleryPostView {
@@ -28,11 +29,7 @@ export default function GalleryPostCard({
     <div className="overflow-hidden rounded-xl border border-line bg-surface">
       <div className="relative aspect-square bg-raised">
         {post.type === "video" ? (
-          <video
-            src={`/api/gallery/${post.id}`}
-            controls
-            className="h-full w-full object-cover"
-          />
+          <CustomVideoPlayer src={`/api/gallery/${post.id}`} />
         ) : post.type === "link" ? (
           post.embedUrl ? (
             <iframe

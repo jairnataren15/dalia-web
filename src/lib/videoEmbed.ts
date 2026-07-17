@@ -9,7 +9,24 @@ export interface ParsedVideoUrl {
   embedUrl: string | null;
 }
 
-export function parseVideoUrl(raw: string): ParsedVideoUrl | null {
+/** Resuelve el iframe real de una plataforma vía su oEmbed público. */
+async function resolveOembed(url: string, endpoint: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${endpoint}?url=${encodeURIComponent(url)}&format=json`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const html = typeof json.html === "string" ? json.html : null;
+    if (!html) return null;
+    const match = html.match(/src="([^"]+)"/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function parseVideoUrl(raw: string): Promise<ParsedVideoUrl | null> {
   let u: URL;
   try {
     u = new URL(raw);
@@ -60,9 +77,10 @@ export function parseVideoUrl(raw: string): ParsedVideoUrl | null {
     }
   }
 
-  // Medal.tv — sin iframe público fiable, se muestra como tarjeta de enlace.
+  // Medal.tv — usa su oEmbed público para conseguir el iframe real.
   if (host === "medal.tv") {
-    return { platformLabel: "Medal", embedUrl: null };
+    const embedUrl = await resolveOembed(raw, "https://medal.tv/api/oembed");
+    return { platformLabel: "Medal", embedUrl };
   }
 
   // Overplay / Outplayed y cualquier otro dominio no reconocido.

@@ -92,7 +92,7 @@ export async function addGalleryLink(
     return { status: "error", message: "Pega un link de Twitch, YouTube, Medal, Overplay, etc." };
   }
 
-  const parsed = parseVideoUrl(url);
+  const parsed = await parseVideoUrl(url);
   if (!parsed) {
     return { status: "error", message: "Ese link no parece válido." };
   }
