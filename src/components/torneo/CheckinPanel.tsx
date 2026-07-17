@@ -5,54 +5,23 @@ import { motion } from "framer-motion";
 import { activeTournament } from "@/lib/data";
 
 export default function CheckinPanel() {
-  // Estado local simulando al equipo del usuario (índice 4 = MidOrFeed)
-  const [teams, setTeams] = useState(activeTournament.registered);
-  const myTeamIndex = 4;
+  const [teams] = useState(activeTournament.registered);
 
-  const confirm = () => {
-    setTeams((prev) =>
-      prev.map((t, i) => (i === myTeamIndex ? { ...t, checkedIn: true } : t))
+  if (teams.length === 0) {
+    return (
+      <div className="rounded-xl border border-line bg-surface p-8 text-center">
+        <p className="text-sm text-dim">
+          Todavía no hay equipos inscritos en la Copa DALIA.EXE. En cuanto abran
+          las inscripciones, aquí verás el estado de check-in de cada equipo.
+        </p>
+      </div>
     );
-  };
+  }
 
   const done = teams.filter((t) => t.checkedIn).length;
-  const myTeam = teams[myTeamIndex];
 
   return (
     <div className="space-y-6">
-      {/* Tu equipo */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`rounded-xl border p-6 ${
-          myTeam.checkedIn
-            ? "border-live/40 bg-live-soft"
-            : "rose-glow border-rose/50 bg-rose-soft"
-        }`}
-      >
-        <p className="text-xs font-semibold uppercase tracking-wider text-dim">
-          Tu equipo
-        </p>
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="font-display text-xl font-bold">{myTeam.name}</p>
-            <p className="text-sm text-dim">Capitán: {myTeam.captain}</p>
-          </div>
-          {myTeam.checkedIn ? (
-            <span className="flex items-center gap-2 font-display font-bold text-live">
-              ✓ Check-in hecho
-            </span>
-          ) : (
-            <button
-              onClick={confirm}
-              className="rounded-lg bg-rose px-6 py-2.5 font-display text-sm font-bold text-base transition-colors hover:bg-rose-hi"
-            >
-              Confirmar presencia
-            </button>
-          )}
-        </div>
-      </motion.div>
-
       {/* Barra de progreso */}
       <div>
         <div className="mb-2 flex justify-between text-xs text-dim">

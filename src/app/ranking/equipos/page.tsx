@@ -12,6 +12,14 @@ export default function EquiposPage() {
         title="Equipos DALIA.EXE"
         lede="Los escuadrones fijos de la comunidad: stats agregadas de flex, torneos internos y el eterno pique entre ellos."
       />
+      {teams.length === 0 && (
+        <Card className="p-8 text-center">
+          <p className="text-sm text-dim">
+            Todavía no hay equipos fijos registrados. En cuanto la comunidad forme
+            escuadrones para torneos o flex, aparecerán aquí.
+          </p>
+        </Card>
+      )}
       <div className="grid gap-5 lg:grid-cols-1">
         {teams.map((team, ti) => {
           const roster = team.memberIds

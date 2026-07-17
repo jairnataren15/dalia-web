@@ -12,6 +12,14 @@ export default function HistorialPage() {
         title="Historial de la Copa"
         lede="Todos los torneos DALIA.EXE, con sus campeones y MVPs. La gloria queda escrita."
       />
+      {pastTournaments.length === 0 && (
+        <Card className="p-8 text-center">
+          <p className="text-sm text-dim">
+            Todavía no se ha jugado ningún torneo — el historial se llena en
+            cuanto termine la primera Copa DALIA.EXE.
+          </p>
+        </Card>
+      )}
       <div className="space-y-4">
         {pastTournaments.map((t, i) => (
           <Reveal key={t.name} delay={i * 0.06}>

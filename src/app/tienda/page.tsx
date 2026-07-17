@@ -19,19 +19,26 @@ export default function TiendaPage() {
         <section className="mt-14 pb-8">
           <h2 className="mb-4 text-xl font-bold">Últimos ganadores</h2>
           <Card className="overflow-hidden">
-            <ul className="divide-y divide-line/60">
-              {pastWinners.map((w) => (
-                <li key={`${w.prize}-${w.date}`} className="flex items-center justify-between px-5 py-3">
-                  <div>
-                    <p className="text-sm font-semibold">{w.prize}</p>
-                    <p className="text-xs text-faint">{w.date}</p>
-                  </div>
-                  <span className="font-display text-sm font-bold text-gold">
-                    ✿ {w.winner}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            {pastWinners.length === 0 ? (
+              <p className="p-5 text-center text-sm text-dim">
+                Todavía no se ha resuelto ningún sorteo — el primero quedará
+                registrado aquí.
+              </p>
+            ) : (
+              <ul className="divide-y divide-line/60">
+                {pastWinners.map((w) => (
+                  <li key={`${w.prize}-${w.date}`} className="flex items-center justify-between px-5 py-3">
+                    <div>
+                      <p className="text-sm font-semibold">{w.prize}</p>
+                      <p className="text-xs text-faint">{w.date}</p>
+                    </div>
+                    <span className="font-display text-sm font-bold text-gold">
+                      ✿ {w.winner}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
           <p className="mt-3 text-xs text-faint">
             Todos los sorteos se resuelven en directo. El historial completo es público

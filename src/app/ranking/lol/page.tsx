@@ -1,6 +1,7 @@
-import { PageHeader } from "@/components/ui";
+import { PageHeader, Card } from "@/components/ui";
 import LolRanking from "@/components/ranking/LolRanking";
 import Comparator from "@/components/ranking/Comparator";
+import { members } from "@/lib/data";
 
 export const metadata = { title: "Ranking LoL — Dalia" };
 
@@ -19,7 +20,16 @@ export default function RankingLolPage() {
           Elige dos miembros y compara su rango, winrate, KDA y progresión de LP
           de las últimas 10 semanas.
         </p>
-        <Comparator />
+        {members.length >= 2 ? (
+          <Comparator />
+        ) : (
+          <Card className="p-8 text-center">
+            <p className="text-sm text-dim">
+              Hace falta al menos 2 miembros verificados para poder comparar —
+              en cuanto se verifique alguien más, el comparador se activa solo.
+            </p>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ export default async function AdminDashboard() {
     { label: "Cuentas registradas", value: totalUsers },
     { label: "Riot ID verificados", value: verifiedUsers },
     { label: "Administradores", value: adminCount },
-    { label: "Miembros en el ranking (mock)", value: members.length },
+    { label: "Miembros en el ranking de LoL", value: members.length },
     { label: "Equipos inscritos · Copa activa", value: activeTournament.registered.length },
     { label: "Sorteos activos en la tienda", value: raffles.length },
   ];
