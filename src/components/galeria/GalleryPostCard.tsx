@@ -12,6 +12,9 @@ export interface GalleryPostView {
   authorImage: string | null;
   authorAvatarChamp: string | null;
   authorPronouns: string | null;
+  externalUrl: string | null;
+  embedUrl: string | null;
+  platformLabel: string | null;
 }
 
 export default function GalleryPostCard({
@@ -30,6 +33,27 @@ export default function GalleryPostCard({
             controls
             className="h-full w-full object-cover"
           />
+        ) : post.type === "link" ? (
+          post.embedUrl ? (
+            <iframe
+              src={post.embedUrl}
+              allowFullScreen
+              className="h-full w-full border-0"
+            />
+          ) : (
+            <a
+              href={post.externalUrl ?? "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-full w-full flex-col items-center justify-center gap-2 text-center transition-colors hover:bg-hover"
+            >
+              <span className="text-3xl">▶</span>
+              <span className="font-display text-sm font-bold text-rose">
+                Ver en {post.platformLabel ?? "el enlace"}
+              </span>
+              <span className="max-w-[80%] truncate text-xs text-faint">{post.externalUrl}</span>
+            </a>
+          )
         ) : (
           <img
             src={`/api/gallery/${post.id}`}
@@ -52,6 +76,11 @@ export default function GalleryPostCard({
               <span className="ml-1 font-normal text-faint">({post.authorPronouns})</span>
             )}
           </p>
+          {post.type === "link" && post.platformLabel && (
+            <span className="rounded-full bg-raised px-2 py-0.5 text-[10px] font-bold uppercase text-faint">
+              {post.platformLabel}
+            </span>
+          )}
           {canDelete && (
             <form action={deleteGalleryPost.bind(null, post.id)}>
               <button

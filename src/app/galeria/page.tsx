@@ -52,6 +52,9 @@ export default async function GaleriaPage() {
                 authorImage: p.user.image,
                 authorAvatarChamp: p.user.avatarChamp,
                 authorPronouns: p.user.pronouns,
+                externalUrl: p.externalUrl,
+                embedUrl: p.embedUrl,
+                platformLabel: p.platformLabel,
               }}
               canDelete={session?.user?.id === p.userId || session?.user?.role === "ADMIN"}
             />

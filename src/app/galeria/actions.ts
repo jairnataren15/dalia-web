@@ -11,6 +11,7 @@ import {
   MAX_IMAGE_BYTES,
   MAX_VIDEO_BYTES,
 } from "@/lib/blobs";
+import { parseVideoUrl } from "@/lib/videoEmbed";
 
 export interface UploadState {
   status: "idle" | "error" | "success";
@@ -75,6 +76,42 @@ export async function uploadGalleryPost(
   return { status: "success" };
 }
 
+export async function addGalleryLink(
+  _prev: UploadState,
+  formData: FormData
+): Promise<UploadState> {
+  const session = await auth();
+  if (!session?.user) {
+    return { status: "error", message: "Inicia sesión para publicar en la galería." };
+  }
+
+  const url = String(formData.get("url") ?? "").trim();
+  const caption = String(formData.get("caption") ?? "").trim().slice(0, 280);
+
+  if (!url) {
+    return { status: "error", message: "Pega un link de Twitch, YouTube, Medal, Overplay, etc." };
+  }
+
+  const parsed = parseVideoUrl(url);
+  if (!parsed) {
+    return { status: "error", message: "Ese link no parece válido." };
+  }
+
+  await prisma.galleryPost.create({
+    data: {
+      userId: session.user.id,
+      type: "link",
+      externalUrl: url,
+      embedUrl: parsed.embedUrl,
+      platformLabel: parsed.platformLabel,
+      caption: caption || null,
+    },
+  });
+
+  revalidatePath("/galeria");
+  return { status: "success" };
+}
+
 export async function deleteGalleryPost(id: string) {
   const session = await auth();
   if (!session?.user) throw new Error("No autorizado.");
@@ -84,11 +121,13 @@ export async function deleteGalleryPost(id: string) {
     throw new Error("No puedes borrar la publicación de otra persona.");
   }
 
-  try {
-    const store = getGalleryStore();
-    await store.delete(post.blobKey);
-  } catch {
-    // si el blob ya no existe o falla, igual limpiamos el registro
+  if (post.blobKey) {
+    try {
+      const store = getGalleryStore();
+      await store.delete(post.blobKey);
+    } catch {
+      // si el blob ya no existe o falla, igual limpiamos el registro
+    }
   }
 
   await prisma.galleryPost.delete({ where: { id } });

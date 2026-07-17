@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const { id } = await params;
   const post = await prisma.galleryPost.findUnique({ where: { id } });
-  if (!post) {
+  if (!post || !post.blobKey || !post.mimeType) {
     return NextResponse.json({ error: "No encontrado" }, { status: 404 });
   }
 

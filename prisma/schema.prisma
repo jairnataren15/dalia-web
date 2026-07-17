@@ -99,10 +99,16 @@ model User {
 model GalleryPost {
   id        String   @id @default(cuid())
   userId    String
-  type      String // image | video
-  blobKey   String   @unique
-  mimeType  String
-  fileSize  Int
+  type      String // image | video | link
+  blobKey   String?  @unique
+  mimeType  String?
+  fileSize  Int?
+
+  // Para posts tipo "link" (Twitch, YouTube, Medal, Overplay...)
+  externalUrl   String?
+  embedUrl      String? // URL de iframe si la plataforma se puede incrustar
+  platformLabel String?
+
   caption   String?
   createdAt DateTime @default(now())
 
