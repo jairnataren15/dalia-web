@@ -1,13 +1,14 @@
 import { PageHeader, Card } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { parseVideoUrl } from "@/lib/videoEmbed";
 import GalleryUploadForm from "@/components/galeria/GalleryUploadForm";
 import GalleryPostCard from "@/components/galeria/GalleryPostCard";
 
 export const metadata = { title: "Galería — Dalia" };
 
 export default async function GaleriaPage() {
-  const [session, posts] = await Promise.all([
+  const [session, rawPosts] = await Promise.all([
     auth(),
     prisma.galleryPost.findMany({
       orderBy: { createdAt: "desc" },
@@ -15,6 +16,24 @@ export default async function GaleriaPage() {
       take: 60,
     }),
   ]);
+
+  // Autorepara posts de link que quedaron sin embed antes de soportar su
+  // plataforma (ej. Medal se añadió después de que ya hubiera posts).
+  const posts = await Promise.all(
+    rawPosts.map(async (p) => {
+      if (p.type === "link" && !p.embedUrl && p.externalUrl) {
+        const parsed = await parseVideoUrl(p.externalUrl).catch(() => null);
+        if (parsed?.embedUrl) {
+          await prisma.galleryPost.update({
+            where: { id: p.id },
+            data: { embedUrl: parsed.embedUrl, platformLabel: parsed.platformLabel },
+          });
+          return { ...p, embedUrl: parsed.embedUrl, platformLabel: parsed.platformLabel };
+        }
+      }
+      return p;
+    })
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
