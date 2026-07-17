@@ -3,13 +3,12 @@ import { PageHeader, Card } from "@/components/ui";
 import Reveal from "@/components/Reveal";
 import Bracket from "@/components/torneo/Bracket";
 import { getActiveTournament } from "@/lib/tournament";
-import { auth } from "@/auth";
+import { getViewMode } from "@/lib/adminView";
 
 export const metadata = { title: "Copa DALIA.EXE — Dalia" };
 
 export default async function TorneoPage() {
-  const [t, session] = await Promise.all([getActiveTournament(), auth()]);
-  const isAdmin = session?.user?.role === "ADMIN";
+  const [t, { isAdminView: isAdmin }] = await Promise.all([getActiveTournament(), getViewMode()]);
 
   if (!t) {
     return (

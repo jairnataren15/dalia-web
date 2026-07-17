@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { getViewMode } from "@/lib/adminView";
 
 export const metadata = { title: "Admin — DALIA.EXE" };
 
@@ -24,6 +25,11 @@ export default async function AdminLayout({
     redirect("/verificar");
   }
   if (session.user.role !== "ADMIN") {
+    redirect("/");
+  }
+  const { isAdminView } = await getViewMode();
+  if (!isAdminView) {
+    // Está en modo "Ver como usuario" — vuelve a Inicio hasta que cambie de vista.
     redirect("/");
   }
 

@@ -1,7 +1,7 @@
 import { PageHeader, Card } from "@/components/ui";
 import Reveal from "@/components/Reveal";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
+import { getViewMode } from "@/lib/adminView";
 import { addScheduleEntry } from "@/app/admin/schedule-actions";
 import ScheduleRow from "@/components/admin/ScheduleRow";
 
@@ -18,11 +18,10 @@ const inputCls =
   "w-full rounded-lg border border-line bg-raised px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-rose";
 
 export default async function CalendarioPage() {
-  const [schedule, session] = await Promise.all([
+  const [schedule, { isAdminView: isAdmin }] = await Promise.all([
     prisma.scheduleEntry.findMany({ orderBy: { order: "asc" } }),
-    auth(),
+    getViewMode(),
   ]);
-  const isAdmin = session?.user?.role === "ADMIN";
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 lg:px-8">

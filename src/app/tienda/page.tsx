@@ -4,7 +4,7 @@ import RaffleGrid from "@/components/tienda/RaffleGrid";
 import RaffleRow from "@/components/admin/RaffleRow";
 import { pastWinners } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
+import { getViewMode } from "@/lib/adminView";
 import { addRaffle } from "@/app/admin/raffle-actions";
 
 export const metadata = { title: "Tienda — Dalia" };
@@ -13,8 +13,7 @@ const inputCls =
   "w-full rounded-lg border border-line bg-raised px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-rose";
 
 export default async function TiendaPage() {
-  const session = await auth();
-  const isAdmin = session?.user?.role === "ADMIN";
+  const { isAdminView: isAdmin } = await getViewMode();
 
   const raffles = await prisma.raffle.findMany({
     where: isAdmin ? undefined : { active: true },

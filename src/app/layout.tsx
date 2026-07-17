@@ -4,6 +4,7 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
 import { auth } from "@/auth";
+import { getViewMode } from "@/lib/adminView";
 
 const chakra = Chakra_Petch({
   variable: "--font-chakra",
@@ -28,13 +29,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
-  const isAdmin = session?.user?.role === "ADMIN";
+  const { isAdminView } = await getViewMode();
   const verified = session?.user?.riotVerified ?? false;
 
   return (
     <html lang="es" className={`${chakra.variable} ${inter.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <Sidebar isAdmin={isAdmin} verified={verified} />
+        <Sidebar isAdmin={isAdminView} verified={verified} />
         <div className="lg:pl-60">
           <Topbar />
           <main className="striped-bg min-h-screen">{children}</main>
