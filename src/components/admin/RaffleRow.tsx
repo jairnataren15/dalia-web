@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { updateRaffle, deleteRaffle, toggleRaffleActive } from "@/app/admin/raffle-actions";
+import { useActionFeedback } from "@/lib/useActionFeedback";
 
 const CATEGORIES = ["Merch", "Riot", "Periféricos", "Especial"];
 
@@ -22,12 +23,18 @@ export interface RaffleView {
 
 export default function RaffleRow({ raffle }: { raffle: RaffleView }) {
   const [editing, setEditing] = useState(false);
+  const { run, isPending } = useActionFeedback();
 
   if (editing) {
     return (
       <form
-        action={async (formData: FormData) => {
-          await updateRaffle(raffle.id, formData);
+        onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          run(() => updateRaffle(raffle.id, formData), {
+            loading: "Guardando…",
+            success: "Cambios guardados.",
+          });
           setEditing(false);
         }}
         className="grid gap-2 border-b border-line/60 p-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -66,30 +73,38 @@ export default function RaffleRow({ raffle }: { raffle: RaffleView }) {
           {raffle.category} · {raffle.cost} pts · {raffle.entries}/{raffle.maxEntries} · {raffle.closes}
         </p>
       </div>
-      <form action={toggleRaffleActive.bind(null, raffle.id, !raffle.active)}>
-        <button
-          type="submit"
-          className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${
-            raffle.active ? "bg-live-soft text-live" : "bg-raised text-faint"
-          }`}
-        >
-          {raffle.active ? "Activo" : "Oculto"}
-        </button>
-      </form>
+      <button
+        disabled={isPending}
+        onClick={() =>
+          run(() => toggleRaffleActive(raffle.id, !raffle.active), {
+            loading: "Actualizando…",
+            success: raffle.active ? "Sorteo ocultado." : "Sorteo activado.",
+          })
+        }
+        className={`rounded-full px-3 py-1 text-xs font-bold uppercase disabled:opacity-50 ${
+          raffle.active ? "bg-live-soft text-live" : "bg-raised text-faint"
+        }`}
+      >
+        {raffle.active ? "Activo" : "Oculto"}
+      </button>
       <button
         onClick={() => setEditing(true)}
         className="rounded-lg border border-line bg-raised px-2.5 py-1 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-ink"
       >
         Editar
       </button>
-      <form action={deleteRaffle.bind(null, raffle.id)}>
-        <button
-          type="submit"
-          className="rounded-lg border border-line bg-raised px-2.5 py-1 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-danger"
-        >
-          Borrar
-        </button>
-      </form>
+      <button
+        disabled={isPending}
+        onClick={() =>
+          run(() => deleteRaffle(raffle.id), {
+            loading: "Borrando…",
+            success: "Sorteo borrado.",
+          })
+        }
+        className="rounded-lg border border-line bg-raised px-2.5 py-1 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-danger disabled:opacity-50"
+      >
+        Borrar
+      </button>
     </div>
   );
 }

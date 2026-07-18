@@ -1,11 +1,9 @@
 import { Card } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
-import { addDonor, deleteDonor } from "@/app/admin/actions";
+import AddDonorForm from "@/components/admin/AddDonorForm";
+import DeleteDonorButton from "@/components/admin/DeleteDonorButton";
 
 export const metadata = { title: "Donadores — Admin DALIA.EXE" };
-
-const inputCls =
-  "w-full rounded-lg border border-line bg-raised px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-rose";
 
 export default async function AdminDonorsPage() {
   const donors = await prisma.donor.findMany({ orderBy: { date: "desc" } });
@@ -38,25 +36,7 @@ export default async function AdminDonorsPage() {
         <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wider">
           Registrar donación
         </h2>
-        <form action={addDonor} className="grid gap-3 sm:grid-cols-[1fr_140px_1fr_auto]">
-          <input name="name" required placeholder="Nombre" className={inputCls} />
-          <input
-            name="amount"
-            required
-            type="number"
-            step="0.01"
-            min="0.01"
-            placeholder="Cantidad $"
-            className={inputCls}
-          />
-          <input name="note" placeholder="Nota (opcional)" className={inputCls} />
-          <button
-            type="submit"
-            className="rounded-lg bg-rose px-4 py-2 font-display text-sm font-bold text-base transition-colors hover:bg-rose-hi"
-          >
-            Añadir
-          </button>
-        </form>
+        <AddDonorForm />
       </Card>
 
       <Card className="overflow-hidden">
@@ -76,19 +56,7 @@ export default async function AdminDonorsPage() {
                 <span className="tnum font-display font-bold text-gold">
                   {d.amount.toLocaleString("es", { style: "currency", currency: "USD" })}
                 </span>
-                <form
-                  action={async () => {
-                    "use server";
-                    await deleteDonor(d.id);
-                  }}
-                >
-                  <button
-                    type="submit"
-                    className="rounded-lg border border-line bg-raised px-2.5 py-1 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-danger"
-                  >
-                    Borrar
-                  </button>
-                </form>
+                <DeleteDonorButton id={d.id} />
               </li>
             ))}
           </ul>

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TIER_COLORS, type Tier } from "@/lib/data";
 import { createLfgPost, deleteLfgPost, type LfgActionState } from "@/app/lfg/actions";
 import UserAvatar from "@/components/UserAvatar";
+import { useActionFeedback } from "@/lib/useActionFeedback";
 
 const ROLE_FILTERS = ["Todos", "Top", "Jungla", "Mid", "ADC", "Soporte"] as const;
 const ROLE_OPTIONS = ["Top", "Jungla", "Mid", "ADC", "Soporte"];
@@ -87,6 +88,7 @@ export default function LfgBoard({
   currentUserId?: string;
 }) {
   const [role, setRole] = useState<(typeof ROLE_FILTERS)[number]>("Todos");
+  const { run, isPending } = useActionFeedback();
   const [showForm, setShowForm] = useState(false);
 
   const filtered = posts.filter((p) => role === "Todos" || p.role === role);
@@ -180,10 +182,19 @@ export default function LfgBoard({
                     Contactar por Discord
                   </button>
                   {(p.userId === currentUserId) && (
-                    <form action={deleteLfgPost.bind(null, p.id)}>
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        run(() => deleteLfgPost(p.id), {
+                          loading: "Borrando…",
+                          success: "Anuncio borrado.",
+                        });
+                      }}
+                    >
                       <button
                         type="submit"
-                        className="rounded-lg border border-line bg-raised px-3 py-1.5 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-danger"
+                        disabled={isPending}
+                        className="rounded-lg border border-line bg-raised px-3 py-1.5 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-danger disabled:opacity-50"
                       >
                         Borrar
                       </button>

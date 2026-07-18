@@ -1,7 +1,7 @@
 import { auth, signIn, signOut } from "@/auth";
 import { getViewMode } from "@/lib/adminView";
-import { setViewMode } from "@/app/admin/view-mode-actions";
 import UserAvatar from "@/components/UserAvatar";
+import ViewModeToggleButton from "@/components/ViewModeToggleButton";
 
 export default async function LoginButton() {
   const session = await auth();
@@ -11,25 +11,7 @@ export default async function LoginButton() {
 
     return (
       <div className="flex items-center gap-2">
-        {isRealAdmin && (
-          <form action={setViewMode.bind(null, isAdminView ? "user" : "admin")}>
-            <button
-              type="submit"
-              className={`rounded-lg border px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wide transition-colors ${
-                isAdminView
-                  ? "border-rose/40 bg-rose/10 text-rose hover:border-rose"
-                  : "border-live/40 bg-live-soft text-live hover:border-live"
-              }`}
-              title={
-                isAdminView
-                  ? "Previsualizar la web como la vería un usuario normal"
-                  : "Volver a tu vista de administrador"
-              }
-            >
-              {isAdminView ? "Ver como usuario" : "Ver como admin"}
-            </button>
-          </form>
-        )}
+        {isRealAdmin && <ViewModeToggleButton isAdminView={isAdminView} />}
         <form
           action={async () => {
             "use server";

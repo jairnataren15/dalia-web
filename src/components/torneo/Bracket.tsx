@@ -9,6 +9,7 @@ import {
   addEarlierRound,
   removeEarliestRound,
 } from "@/app/admin/tournament-actions";
+import { useActionFeedback } from "@/lib/useActionFeedback";
 
 const ROUND_NAME_BY_TEAMS: Record<number, string> = {
   64: "Treintaidosavos de final",
@@ -90,7 +91,7 @@ function HoraField({ matchId, hora, editable }: { matchId: string; hora: string;
 }
 
 function StatePill({ matchId, state, editable }: { matchId: string; state: string; editable: boolean }) {
-  const [, startTransition] = useTransition();
+  const { run } = useActionFeedback();
   const live = state === "en_juego";
   const done = state === "terminada";
 
@@ -118,7 +119,10 @@ function StatePill({ matchId, state, editable }: { matchId: string; state: strin
       onClick={(e) => {
         e.stopPropagation();
         const next = cycle[state as keyof typeof cycle] ?? "pendiente";
-        startTransition(() => quickUpdateMatch(matchId, { state: next }));
+        run(() => quickUpdateMatch(matchId, { state: next }), {
+          loading: "Actualizando estado…",
+          success: "Estado actualizado.",
+        });
       }}
       className={`${cls} cursor-pointer rounded px-1 hover:bg-raised`}
       title="Clic para cambiar el estado"
@@ -146,7 +150,7 @@ function TeamRow({
   done: boolean;
   scoreField: React.ReactNode;
 }) {
-  const [, startTransition] = useTransition();
+  const { run } = useActionFeedback();
   const [dragOver, setDragOver] = useState(false);
 
   return (
@@ -168,8 +172,9 @@ function TeamRow({
         setDragOver(false);
         const teamId = e.dataTransfer.getData("text/plain");
         if (!teamId) return;
-        startTransition(() => {
-          setBracketSlot(matchId, side, teamId);
+        run(() => setBracketSlot(matchId, side, teamId), {
+          loading: "Colocando equipo…",
+          success: "Equipo colocado.",
         });
       }}
       className={`flex items-center justify-between gap-2 px-3 py-2 text-sm transition-colors ${
@@ -266,7 +271,7 @@ export default function Bracket({
   tournamentId?: string;
   editable?: boolean;
 }) {
-  const [isPending, startTransition] = useTransition();
+  const { run, isPending } = useActionFeedback();
   const roundNumbers = Array.from(new Set(matches.map((m) => m.round))).sort((a, b) => a - b);
   const rounds = roundNumbers.map((r) => matches.filter((m) => m.round === r));
   const placedIds = new Set(
@@ -284,7 +289,12 @@ export default function Bracket({
             onDrop={(e) => {
               e.preventDefault();
               const teamId = e.dataTransfer.getData("text/plain");
-              if (teamId) unassignTeamFromBracket(tournamentId, teamId);
+              if (teamId) {
+                run(() => unassignTeamFromBracket(tournamentId, teamId), {
+                  loading: "Quitando equipo…",
+                  success: "Equipo quitado del bracket.",
+                });
+              }
             }}
           >
             <span className="text-xs font-semibold uppercase tracking-wider text-faint">
@@ -302,7 +312,12 @@ export default function Bracket({
             <button
               type="button"
               disabled={isPending}
-              onClick={() => startTransition(() => addEarlierRound(tournamentId))}
+              onClick={() =>
+                run(() => addEarlierRound(tournamentId), {
+                  loading: "Añadiendo ronda…",
+                  success: "Ronda añadida.",
+                })
+              }
               className="rounded-lg border border-rose/40 bg-rose/10 px-3 py-1.5 text-xs font-semibold text-rose transition-colors hover:border-rose disabled:opacity-50"
             >
               {isPending ? "Aplicando…" : "+ Añadir ronda anterior (dobla equipos)"}
@@ -313,7 +328,10 @@ export default function Bracket({
                 disabled={isPending}
                 onClick={() => {
                   if (confirm("Esto borra la ronda más temprana del bracket. ¿Continuar?")) {
-                    startTransition(() => removeEarliestRound(tournamentId));
+                    run(() => removeEarliestRound(tournamentId), {
+                      loading: "Quitando ronda…",
+                      success: "Ronda quitada.",
+                    });
                   }
                 }}
                 className="rounded-lg border border-line bg-raised px-3 py-1.5 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-danger disabled:opacity-50"

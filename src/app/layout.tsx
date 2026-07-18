@@ -3,6 +3,7 @@ import { Chakra_Petch, Inter } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
+import ToastProvider from "@/components/ui/ToastProvider";
 import { auth } from "@/auth";
 import { getViewMode } from "@/lib/adminView";
 
@@ -35,11 +36,13 @@ export default async function RootLayout({
   return (
     <html lang="es" className={`${chakra.variable} ${inter.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <Sidebar isAdmin={isAdminView} verified={verified} />
-        <div className="lg:pl-60">
-          <Topbar />
-          <main className="striped-bg min-h-screen">{children}</main>
-        </div>
+        <ToastProvider>
+          <Sidebar isAdmin={isAdminView} verified={verified} />
+          <div className="lg:pl-60">
+            <Topbar />
+            <main className="striped-bg min-h-screen">{children}</main>
+          </div>
+        </ToastProvider>
       </body>
     </html>
   );

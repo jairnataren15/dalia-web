@@ -2,7 +2,7 @@ import { PageHeader, Card } from "@/components/ui";
 import Reveal from "@/components/Reveal";
 import { prisma } from "@/lib/prisma";
 import { getViewMode } from "@/lib/adminView";
-import { addScheduleEntry } from "@/app/admin/schedule-actions";
+import AddScheduleForm from "@/components/admin/AddScheduleForm";
 import ScheduleRow from "@/components/admin/ScheduleRow";
 
 export const metadata = { title: "Calendario — Dalia" };
@@ -13,9 +13,6 @@ const TYPE_STYLES: Record<string, { label: string; cls: string }> = {
   event: { label: "Evento", cls: "bg-live-soft text-live" },
   off: { label: "Descanso", cls: "bg-raised text-faint" },
 };
-
-const inputCls =
-  "w-full rounded-lg border border-line bg-raised px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-rose";
 
 export default async function CalendarioPage() {
   const [schedule, { isAdminView: isAdmin }] = await Promise.all([
@@ -36,23 +33,7 @@ export default async function CalendarioPage() {
           <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wider">
             Añadir día (admin)
           </h2>
-          <form action={addScheduleEntry} className="grid gap-3 sm:grid-cols-[100px_140px_1fr_110px_auto]">
-            <input name="day" required placeholder="Lunes" className={inputCls} />
-            <input name="time" required placeholder="18:00 – 22:00" className={inputCls} />
-            <input name="content" required placeholder="Qué hace ese día" className={inputCls} />
-            <select name="type" defaultValue="stream" className={inputCls}>
-              <option value="stream">stream</option>
-              <option value="special">special</option>
-              <option value="event">event</option>
-              <option value="off">off</option>
-            </select>
-            <button
-              type="submit"
-              className="rounded-lg bg-rose px-4 py-2 font-display text-sm font-bold text-base transition-colors hover:bg-rose-hi"
-            >
-              Añadir
-            </button>
-          </form>
+          <AddScheduleForm />
         </Card>
       )}
 

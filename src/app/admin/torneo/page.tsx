@@ -1,20 +1,14 @@
 import { Card } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
 import { getActiveTournament } from "@/lib/tournament";
-import {
-  updateTournamentInfo,
-  addTeam,
-  addPastTournament,
-} from "@/app/admin/tournament-actions";
 import TournamentTeamRow from "@/components/admin/TournamentTeamRow";
 import BracketMatchRow from "@/components/admin/BracketMatchRow";
 import PastTournamentRow from "@/components/admin/PastTournamentRow";
+import UpdateTournamentInfoForm from "@/components/admin/UpdateTournamentInfoForm";
+import AddTeamForm from "@/components/admin/AddTeamForm";
+import AddPastTournamentForm from "@/components/admin/AddPastTournamentForm";
 
 export const metadata = { title: "Torneo — Admin DALIA.EXE" };
-
-const inputCls =
-  "w-full rounded-lg border border-line bg-raised px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-rose";
-const labelCls = "mb-1 block text-xs font-semibold uppercase tracking-wider text-dim";
 
 export default async function AdminTorneoPage() {
   const [t, pastTournaments] = await Promise.all([
@@ -48,63 +42,26 @@ export default async function AdminTorneoPage() {
         <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wider">
           Datos del torneo activo
         </h2>
-        <form action={updateTournamentInfo.bind(null, t.id)} className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className={labelCls}>Nombre</label>
-            <input name="name" defaultValue={t.name} required className={inputCls} />
-          </div>
-          <div>
-            <label className={labelCls}>Formato</label>
-            <input name="format" defaultValue={t.format} required className={inputCls} />
-          </div>
-          <div>
-            <label className={labelCls}>Fecha</label>
-            <input name="date" defaultValue={t.date} required className={inputCls} />
-          </div>
-          <div>
-            <label className={labelCls}>Parche</label>
-            <input name="patch" defaultValue={t.patch} required className={inputCls} />
-          </div>
-          <div>
-            <label className={labelCls}>Cupo máximo de equipos</label>
-            <input name="maxTeams" type="number" min="2" defaultValue={t.maxTeams} required className={inputCls} />
-          </div>
-          <div>
-            <label className={labelCls}>Premio</label>
-            <input name="prize" defaultValue={t.prize} required className={inputCls} />
-          </div>
-          <div>
-            <label className={labelCls}>Check-in cierra</label>
-            <input name="checkinCloses" defaultValue={t.checkinCloses} required className={inputCls} />
-          </div>
-          <label className="mt-6 flex items-center gap-2 text-sm text-dim">
-            <input type="checkbox" name="checkinOpen" defaultChecked={t.checkinOpen} className="accent-[#ff4d7d]" />
-            Ventana de check-in abierta
-          </label>
-          <button
-            type="submit"
-            className="rounded-lg bg-rose px-4 py-2 font-display text-sm font-bold text-base transition-colors hover:bg-rose-hi sm:col-span-2"
-          >
-            Guardar datos del torneo
-          </button>
-        </form>
+        <UpdateTournamentInfoForm
+          t={{
+            id: t.id,
+            name: t.name,
+            format: t.format,
+            date: t.date,
+            patch: t.patch,
+            maxTeams: t.maxTeams,
+            prize: t.prize,
+            checkinCloses: t.checkinCloses,
+            checkinOpen: t.checkinOpen,
+          }}
+        />
       </Card>
 
       <Card className="p-5">
         <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wider">
           Añadir equipo inscrito
         </h2>
-        <form action={addTeam.bind(null, t.id)} className="grid gap-3 sm:grid-cols-3">
-          <input name="name" required placeholder="Nombre del equipo" className={inputCls} />
-          <input name="captain" required placeholder="Capitán (Riot ID)" className={inputCls} />
-          <input name="avgRank" required placeholder="Rango medio" className={inputCls} />
-          <button
-            type="submit"
-            className="rounded-lg bg-rose px-4 py-2 font-display text-sm font-bold text-base transition-colors hover:bg-rose-hi sm:col-span-3"
-          >
-            Añadir equipo
-          </button>
-        </form>
+        <AddTeamForm tournamentId={t.id} />
       </Card>
 
       <Card className="overflow-hidden">
@@ -144,20 +101,7 @@ export default async function AdminTorneoPage() {
         <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wider">
           Añadir torneo al historial
         </h2>
-        <form action={addPastTournament} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <input name="name" required placeholder="Nombre del torneo" className={inputCls} />
-          <input name="date" required placeholder="Fecha" className={inputCls} />
-          <input name="teamsCount" type="number" min="1" required placeholder="Nº de equipos" className={inputCls} />
-          <input name="winner" required placeholder="Equipo campeón" className={inputCls} />
-          <input name="runnerUp" required placeholder="Subcampeón" className={inputCls} />
-          <input name="mvp" required placeholder="MVP" className={inputCls} />
-          <button
-            type="submit"
-            className="rounded-lg bg-rose px-4 py-2 font-display text-sm font-bold text-base transition-colors hover:bg-rose-hi sm:col-span-2 lg:col-span-3"
-          >
-            Añadir al historial
-          </button>
-        </form>
+        <AddPastTournamentForm />
       </Card>
 
       <Card className="overflow-hidden">

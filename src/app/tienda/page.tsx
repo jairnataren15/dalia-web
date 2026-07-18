@@ -5,12 +5,9 @@ import RaffleRow from "@/components/admin/RaffleRow";
 import { pastWinners } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { getViewMode } from "@/lib/adminView";
-import { addRaffle } from "@/app/admin/raffle-actions";
+import AddRaffleForm from "@/components/admin/AddRaffleForm";
 
 export const metadata = { title: "Tienda — Dalia" };
-
-const inputCls =
-  "w-full rounded-lg border border-line bg-raised px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-rose";
 
 export default async function TiendaPage() {
   const { isAdminView: isAdmin } = await getViewMode();
@@ -33,25 +30,7 @@ export default async function TiendaPage() {
           <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wider">
             Añadir sorteo (admin)
           </h2>
-          <form action={addRaffle} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <input name="name" required placeholder="Nombre del premio" className={inputCls} />
-            <select name="category" defaultValue="Merch" className={inputCls}>
-              <option value="Merch">Merch</option>
-              <option value="Riot">Riot</option>
-              <option value="Periféricos">Periféricos</option>
-              <option value="Especial">Especial</option>
-            </select>
-            <input name="closes" required placeholder="Cierra: Viernes 20:00" className={inputCls} />
-            <input name="cost" type="number" min="1" required placeholder="Costo en puntos" className={inputCls} />
-            <input name="maxEntries" type="number" min="1" required placeholder="Cupo máximo" className={inputCls} />
-            <input name="image" placeholder="Campeón para ilustrar (opcional)" className={inputCls} />
-            <button
-              type="submit"
-              className="rounded-lg bg-rose px-4 py-2 font-display text-sm font-bold text-base transition-colors hover:bg-rose-hi sm:col-span-2 lg:col-span-3"
-            >
-              Añadir sorteo
-            </button>
-          </form>
+          <AddRaffleForm />
         </Card>
       )}
 

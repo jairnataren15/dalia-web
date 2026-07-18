@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { confirmVerification, cancelVerification, type ActionState } from "@/app/verificar/actions";
 import { profileIconUrl } from "@/lib/riot";
+import { useActionFeedback } from "@/lib/useActionFeedback";
 
 const initialState: ActionState = { status: "idle" };
 
@@ -16,6 +17,7 @@ export default function ChallengeCard({
   challengeIcon: number;
 }) {
   const [state, formAction, pending] = useActionState(confirmVerification, initialState);
+  const { run: runCancel, isPending: cancelPending } = useActionFeedback();
 
   return (
     <div className="rounded-xl border border-rose/40 bg-rose-soft p-6">
@@ -55,14 +57,19 @@ export default function ChallengeCard({
             {pending ? "Comprobando…" : "Ya cambié mi icono, verificar"}
           </button>
         </form>
-        <form action={cancelVerification}>
-          <button
-            type="submit"
-            className="rounded-lg border border-line bg-raised px-5 py-2.5 font-display text-sm font-semibold text-dim transition-colors hover:bg-hover hover:text-ink"
-          >
-            Usar otro Riot ID
-          </button>
-        </form>
+        <button
+          type="button"
+          disabled={cancelPending}
+          onClick={() =>
+            runCancel(() => cancelVerification(), {
+              loading: "Cancelando…",
+              success: "Puedes vincular otro Riot ID.",
+            })
+          }
+          className="rounded-lg border border-line bg-raised px-5 py-2.5 font-display text-sm font-semibold text-dim transition-colors hover:bg-hover hover:text-ink disabled:opacity-50"
+        >
+          Usar otro Riot ID
+        </button>
       </div>
     </div>
   );

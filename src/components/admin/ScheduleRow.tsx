@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { updateScheduleEntry, deleteScheduleEntry } from "@/app/admin/schedule-actions";
+import { useActionFeedback } from "@/lib/useActionFeedback";
 
 const TYPES = ["stream", "special", "event", "off"];
 
@@ -18,12 +19,18 @@ export interface ScheduleEntryView {
 
 export default function ScheduleRow({ entry }: { entry: ScheduleEntryView }) {
   const [editing, setEditing] = useState(false);
+  const { run, isPending } = useActionFeedback();
 
   if (editing) {
     return (
       <form
-        action={async (formData: FormData) => {
-          await updateScheduleEntry(entry.id, formData);
+        onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          run(() => updateScheduleEntry(entry.id, formData), {
+            loading: "Guardando…",
+            success: "Cambios guardados.",
+          });
           setEditing(false);
         }}
         className="grid gap-2 border-b border-line/60 px-5 py-3 sm:grid-cols-[100px_140px_1fr_110px_auto]"
@@ -66,14 +73,18 @@ export default function ScheduleRow({ entry }: { entry: ScheduleEntryView }) {
       >
         Editar
       </button>
-      <form action={deleteScheduleEntry.bind(null, entry.id)}>
-        <button
-          type="submit"
-          className="rounded-lg border border-line bg-raised px-2.5 py-1 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-danger"
-        >
-          Borrar
-        </button>
-      </form>
+      <button
+        disabled={isPending}
+        onClick={() =>
+          run(() => deleteScheduleEntry(entry.id), {
+            loading: "Borrando…",
+            success: "Entrada borrada.",
+          })
+        }
+        className="rounded-lg border border-line bg-raised px-2.5 py-1 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-danger disabled:opacity-50"
+      >
+        Borrar
+      </button>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import UserAvatar from "@/components/UserAvatar";
 import CustomVideoPlayer from "@/components/galeria/CustomVideoPlayer";
 import { deleteGalleryPost } from "@/app/galeria/actions";
+import { useActionFeedback } from "@/lib/useActionFeedback";
 
 export interface GalleryPostView {
   id: string;
@@ -55,6 +56,7 @@ export default function GalleryPostCard({
   canDelete: boolean;
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const { run, isPending } = useActionFeedback();
 
   return (
     <div className="overflow-hidden rounded-xl border border-line bg-surface">
@@ -139,14 +141,19 @@ export default function GalleryPostCard({
             </span>
           )}
           {canDelete && (
-            <form action={deleteGalleryPost.bind(null, post.id)}>
-              <button
-                type="submit"
-                className="rounded-lg border border-line bg-raised px-2 py-0.5 text-[11px] font-semibold text-dim transition-colors hover:bg-hover hover:text-danger"
-              >
-                Borrar
-              </button>
-            </form>
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() =>
+                run(() => deleteGalleryPost(post.id), {
+                  loading: "Borrando…",
+                  success: "Publicación borrada.",
+                })
+              }
+              className="rounded-lg border border-line bg-raised px-2 py-0.5 text-[11px] font-semibold text-dim transition-colors hover:bg-hover hover:text-danger disabled:opacity-50"
+            >
+              Borrar
+            </button>
           )}
         </div>
         {post.caption && (

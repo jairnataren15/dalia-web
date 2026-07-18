@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { updateTeam, deleteTeam, toggleTeamCheckin } from "@/app/admin/tournament-actions";
+import { useActionFeedback } from "@/lib/useActionFeedback";
 
 const inputCls =
   "w-full rounded-lg border border-line bg-raised px-2.5 py-1.5 text-sm text-ink outline-none transition-colors focus:border-rose";
@@ -16,12 +17,18 @@ export interface TeamView {
 
 export default function TournamentTeamRow({ team }: { team: TeamView }) {
   const [editing, setEditing] = useState(false);
+  const { run, isPending } = useActionFeedback();
 
   if (editing) {
     return (
       <form
-        action={async (formData: FormData) => {
-          await updateTeam(team.id, formData);
+        onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          run(() => updateTeam(team.id, formData), {
+            loading: "Guardando…",
+            success: "Equipo actualizado.",
+          });
           setEditing(false);
         }}
         className="grid gap-2 border-b border-line/60 p-4 sm:grid-cols-3"
@@ -53,30 +60,38 @@ export default function TournamentTeamRow({ team }: { team: TeamView }) {
           {team.captain} · rango medio {team.avgRank}
         </p>
       </div>
-      <form action={toggleTeamCheckin.bind(null, team.id, !team.checkedIn)}>
-        <button
-          type="submit"
-          className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${
-            team.checkedIn ? "bg-live-soft text-live" : "bg-raised text-faint"
-          }`}
-        >
-          {team.checkedIn ? "Check-in ✓" : "Pendiente"}
-        </button>
-      </form>
+      <button
+        disabled={isPending}
+        onClick={() =>
+          run(() => toggleTeamCheckin(team.id, !team.checkedIn), {
+            loading: "Actualizando…",
+            success: team.checkedIn ? "Check-in revertido." : "Check-in confirmado.",
+          })
+        }
+        className={`rounded-full px-3 py-1 text-xs font-bold uppercase disabled:opacity-50 ${
+          team.checkedIn ? "bg-live-soft text-live" : "bg-raised text-faint"
+        }`}
+      >
+        {team.checkedIn ? "Check-in ✓" : "Pendiente"}
+      </button>
       <button
         onClick={() => setEditing(true)}
         className="rounded-lg border border-line bg-raised px-2.5 py-1 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-ink"
       >
         Editar
       </button>
-      <form action={deleteTeam.bind(null, team.id)}>
-        <button
-          type="submit"
-          className="rounded-lg border border-line bg-raised px-2.5 py-1 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-danger"
-        >
-          Borrar
-        </button>
-      </form>
+      <button
+        disabled={isPending}
+        onClick={() =>
+          run(() => deleteTeam(team.id), {
+            loading: "Borrando…",
+            success: "Equipo borrado.",
+          })
+        }
+        className="rounded-lg border border-line bg-raised px-2.5 py-1 text-xs font-semibold text-dim transition-colors hover:bg-hover hover:text-danger disabled:opacity-50"
+      >
+        Borrar
+      </button>
     </div>
   );
 }
