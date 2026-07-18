@@ -179,6 +179,51 @@ async function getAppAccessToken(): Promise<string> {
   return appToken.token;
 }
 
+/** ¿Está Dalia en directo ahora mismo? (token de aplicación, sin necesitar el suyo). */
+export async function isBroadcasterLive(broadcasterId: string): Promise<boolean> {
+  const token = await getAppAccessToken();
+  const res = await fetch(`${HELIX}/streams?user_id=${broadcasterId}`, {
+    headers: { Authorization: `Bearer ${token}`, "Client-Id": clientId() },
+  });
+  if (!res.ok) return false;
+  const json = await res.json();
+  return Array.isArray(json.data) && json.data.length > 0;
+}
+
+/**
+ * Logins (en minúscula) de quienes están presentes en el chat de Dalia ahora
+ * mismo. Requiere el scope moderator:read:chatters en el token de broadcaster.
+ */
+export async function getChatters(): Promise<string[]> {
+  const broadcaster = await getBroadcasterAccessToken();
+  if (!broadcaster) return [];
+
+  const logins: string[] = [];
+  let cursor: string | undefined;
+  do {
+    const url = new URL(`${HELIX}/chat/chatters`);
+    url.searchParams.set("broadcaster_id", broadcaster.broadcasterId);
+    url.searchParams.set("moderator_id", broadcaster.broadcasterId);
+    url.searchParams.set("first", "1000");
+    if (cursor) url.searchParams.set("after", cursor);
+
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${broadcaster.accessToken}`,
+        "Client-Id": clientId(),
+      },
+    });
+    if (!res.ok) break;
+    const json = await res.json();
+    for (const c of json.data as { user_login: string }[]) {
+      logins.push(c.user_login.toLowerCase());
+    }
+    cursor = json.pagination?.cursor || undefined;
+  } while (cursor);
+
+  return logins;
+}
+
 /** Busca un usuario público de Twitch por su login (sin necesitar su token). */
 export async function getUserByLogin(login: string): Promise<TwitchUser | null> {
   const token = await getAppAccessToken();

@@ -21,7 +21,8 @@ export async function GET(req: NextRequest) {
 
   const state = randomBytes(16).toString("hex");
   const redirectUri = new URL("/api/twitch/callback", origin).toString();
-  const scope = mode === "broadcaster" ? "channel:read:subscriptions" : "";
+  const scope =
+    mode === "broadcaster" ? "channel:read:subscriptions moderator:read:chatters" : "";
 
   const authorizeUrl = new URL("https://id.twitch.tv/oauth2/authorize");
   authorizeUrl.searchParams.set("client_id", process.env.TWITCH_CLIENT_ID ?? "");
